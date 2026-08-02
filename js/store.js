@@ -84,7 +84,7 @@ export function azzeraTutto() {
 
 /* Un livello finito, in uno qualsiasi dei due giochi. Restituisce quanti
    nuovi amici sono arrivati nella cuccia grazie a questo livello. */
-const LIVELLI_PER_AMICO = 5;
+export const LIVELLI_PER_AMICO = 5;
 
 export function registraLivelloFinito(biscottiGuadagnati = 0) {
   stato.livelliCompletati += 1;

@@ -8,7 +8,7 @@
    successiva il gioco si aggiorna da solo, senza chiedere niente a nessuno.
    ========================================================================== */
 
-const VERSIONE = 'wurstel-v2';
+const VERSIONE = 'wurstel-v3';
 
 /* Senza questi il gioco non parte: o ci sono tutti, o l'installazione fallisce
    e si riprova la volta dopo. Meglio nessuna promessa che una promessa a metà. */
@@ -29,6 +29,7 @@ const NUCLEO = [
   './js/ui.js',
   './js/hub.js',
   './js/amici.js',
+  './js/riserva.js',
   './js/match3/engine.js',
   './js/match3/levels.js',
   './js/match3/view.js',
