@@ -8,7 +8,7 @@
    successiva il gioco si aggiorna da solo, senza chiedere niente a nessuno.
    ========================================================================== */
 
-const VERSIONE = 'wurstel-v1';
+const VERSIONE = 'wurstel-v2';
 
 /* Senza questi il gioco non parte: o ci sono tutti, o l'installazione fallisce
    e si riprova la volta dopo. Meglio nessuna promessa che una promessa a metà. */

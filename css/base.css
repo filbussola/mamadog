@@ -19,15 +19,22 @@
   --rosa:    #ff8fa3;
   --verde:   #8fd14f;
 
-  /* Pezzi del match-3: tinta, tinta scura (bordo) e luce (riflesso) */
-  --p0: #f2e2c4;  --p0-s: #c9a97b;   /* osso     */
-  --p1: #ff8fa3;  --p1-s: #cf5c72;   /* impronta */
-  --p2: #9ad84f;  --p2-s: #6aa72c;   /* pallina  */
-  --p3: #5cc0f2;  --p3-s: #2f8ec2;   /* ciotola  */
-  --p4: #ff6b6b;  --p4-s: #c93f47;   /* cuore    */
-  --p5: #b98ff0;  --p5-s: #8659c4;   /* stella   */
+  /* Pezzi del match-3. Tre tinte ciascuno — chiara, piena, scura — perché il
+     pezzo non è una figura piatta: è un oggetto illuminato da sinistra in
+     alto, e sono queste tre a dargli volume. */
+  --p0: #f2e2c4;  --p0-l: #fff8ea;  --p0-s: #c39f6c;   /* osso     */
+  --p1: #ff8fa3;  --p1-l: #ffc6d1;  --p1-s: #cb5068;   /* impronta */
+  --p2: #9ad84f;  --p2-l: #cbf28c;  --p2-s: #629d25;   /* pallina  */
+  --p3: #5cc0f2;  --p3-l: #a9e4ff;  --p3-s: #2884b8;   /* ciotola  */
+  --p4: #ff6b6b;  --p4-l: #ffadad;  --p4-s: #c2373f;   /* cuore    */
+  --p5: #b98ff0;  --p5-l: #dfc4ff;  --p5-s: #7f50be;   /* stella   */
 
-  --ombra: 0 .6rem 1.6rem rgb(0 0 0 / .38);
+  /* Due strati: una ombra stretta che àncora l'oggetto alla superficie e una
+     larga e morbida che gli dà aria. Una sola sembra sempre finta. */
+  --ombra: 0 .15rem .3rem rgb(0 0 0 / .30), 0 .7rem 1.9rem rgb(0 0 0 / .34);
+  /* Il filo di luce sul bordo superiore: è ciò che fa sembrare i pannelli
+     ritagliati nella materia invece che disegnati sopra. */
+  --luce-bordo: inset 0 1px 0 rgb(255 255 255 / .09);
   --raggio: 1.4rem;
 
   /* Bordi arrotondati e spazi dell'iPad, notch compresi */
@@ -51,14 +58,15 @@
   --ambra:   #e0891f;
   --ambra-2: #c96f10;
 
-  --p0: #e9d4ab;  --p0-s: #b5945f;
-  --p1: #f4718a;  --p1-s: #c24259;
-  --p2: #7cc63a;  --p2-s: #55901f;
-  --p3: #3fadea;  --p3-s: #2178a8;
-  --p4: #f04e4e;  --p4-s: #b52f36;
-  --p5: #a274e6;  --p5-s: #7145ad;
+  --p0: #e9d4ab;  --p0-l: #fbf1da;  --p0-s: #ac8a53;
+  --p1: #f4718a;  --p1-l: #ffb4c2;  --p1-s: #bc3a51;
+  --p2: #7cc63a;  --p2-l: #b9ee7c;  --p2-s: #4d871a;
+  --p3: #3fadea;  --p3-l: #97dbfb;  --p3-s: #1c6f9d;
+  --p4: #f04e4e;  --p4-l: #ff9d9d;  --p4-s: #ab2a31;
+  --p5: #a274e6;  --p5-l: #d2b4f8;  --p5-s: #683ca2;
 
-  --ombra: 0 .5rem 1.2rem rgb(120 80 40 / .18);
+  --ombra: 0 .1rem .22rem rgb(140 95 45 / .13), 0 .6rem 1.5rem rgb(140 95 45 / .17);
+  --luce-bordo: inset 0 1px 0 rgb(255 255 255 / .9);
 }
 
 /* --- Reset ---------------------------------------------------------------- */
@@ -94,6 +102,10 @@ body {
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 [hidden] { display: none !important; }
 
+/* La tavolozza dei gradienti non si vede: esiste solo per essere richiamata.
+   Niente display:none, che in alcuni browser ne annulla anche il contenuto. */
+.tavolozza { position: absolute; width: 0; height: 0; overflow: hidden; }
+
 /* Chi ha attivato "Riduci movimento" nelle impostazioni di iOS merita calma vera */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -104,12 +116,26 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 
 /* --- Impalcatura ---------------------------------------------------------- */
+/* Lo sfondo non è una tinta piatta: è una stanza. Un alone caldo in alto,
+   come una lampada accesa, un riflesso rosato in basso a sinistra e una
+   vignettatura che raccoglie lo sguardo verso il centro, dove si gioca. */
 .app {
   position: fixed;
   inset: 0;
   padding: var(--su) var(--dx) var(--giu) var(--sx);
-  background:
-    radial-gradient(120% 80% at 50% -10%, var(--sfondo-2) 0%, var(--sfondo) 62%);
+  background-color: var(--sfondo);
+  background-image:
+    radial-gradient(88% 52% at 50% -10%, rgb(255 180 84 / .17), transparent 64%),
+    radial-gradient(64% 44% at 8% 104%,  rgb(255 143 163 / .11), transparent 62%),
+    radial-gradient(76% 58% at 96% 88%,  rgb(120 190 255 / .07), transparent 60%),
+    radial-gradient(125% 95% at 50% 46%, transparent 52%, rgb(0 0 0 / .30));
+}
+:root[data-tema="giorno"] .app {
+  background-image:
+    radial-gradient(88% 52% at 50% -10%, rgb(255 196 107 / .38), transparent 66%),
+    radial-gradient(64% 44% at 8% 104%,  rgb(255 160 180 / .20), transparent 62%),
+    radial-gradient(76% 58% at 96% 88%,  rgb(120 190 255 / .14), transparent 60%),
+    radial-gradient(125% 95% at 50% 46%, transparent 56%, rgb(150 105 55 / .13));
 }
 
 .schermo {
@@ -147,11 +173,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   width: 3.9rem; height: 3.9rem;
   display: grid; place-items: center;
   border-radius: 50%;
-  background: var(--pannello);
-  box-shadow: var(--ombra);
-  transition: transform .12s ease, background .12s ease;
+  background: linear-gradient(180deg, var(--pannello-alto), var(--pannello));
+  box-shadow: var(--luce-bordo), var(--ombra);
+  transition: transform .12s ease, filter .12s ease;
 }
-.bottone-tondo:active { transform: scale(.92); background: var(--pannello-alto); }
+.bottone-tondo:active { transform: scale(.92); filter: brightness(1.14); }
 .bottone-tondo__icona { font-size: 1.9rem; line-height: 1; color: var(--inchiostro); }
 
 .bottone-largo {
@@ -159,17 +185,21 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   padding: 0 1.6rem;
   display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
   border-radius: 2rem;
-  background: var(--ambra);
-  color: #2a1c08;
+  /* Un bottone illuminato dall'alto invita a essere premuto; uno piatto no. */
+  background: linear-gradient(180deg, var(--ambra), var(--ambra-2));
+  color: #2f1f06;
   font-weight: 800;
-  box-shadow: var(--ombra);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .38),
+              0 .15rem .3rem rgb(0 0 0 / .25),
+              0 .5rem 1.2rem color-mix(in srgb, var(--ambra) 30%, transparent);
   transition: transform .12s ease, filter .12s ease;
 }
-.bottone-largo:active { transform: scale(.95); filter: brightness(1.08); }
-.bottone-largo:disabled { opacity: .38; }
+.bottone-largo:active { transform: scale(.95) translateY(1px); filter: brightness(1.1); }
+.bottone-largo:disabled { opacity: .35; box-shadow: none; }
 .bottone-largo--tenue {
-  background: var(--pannello);
+  background: linear-gradient(180deg, var(--pannello-alto), var(--pannello));
   color: var(--inchiostro);
+  box-shadow: var(--luce-bordo), var(--ombra);
 }
 
 /* --- Barra superiore dei giochi ------------------------------------------- */
@@ -262,9 +292,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 2rem 1.6rem;
-  border-radius: var(--raggio);
-  background: var(--pannello);
-  box-shadow: var(--ombra);
+  border-radius: calc(var(--raggio) * 1.15);
+  background:
+    radial-gradient(120% 70% at 50% -10%, rgb(255 180 84 / .10), transparent 60%),
+    linear-gradient(180deg, var(--pannello-alto), var(--pannello));
+  box-shadow: var(--luce-bordo), var(--ombra);
   text-align: center;
   animation: pannello-entra .34s cubic-bezier(.2,1.3,.4,1) both;
 }

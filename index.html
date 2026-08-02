@@ -28,6 +28,66 @@
 </head>
 <body>
 
+<!--
+  Tavolozza condivisa. I gradienti stanno qui una volta sola e tutte le 64
+  tessere del tavolo li richiamano per identificativo: definirli dentro ogni
+  pezzo significherebbe rigenerarli a ogni cascata, per niente.
+  Le tinte arrivano dalle variabili CSS, quindi cambiano da sole col tema.
+-->
+<svg class="tavolozza" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Luce da sinistra in alto, ombra verso il bordo opposto: le coordinate
+         sono quelle del riquadro 100x100 in cui è disegnato ogni pezzo. -->
+    <radialGradient id="g0" gradientUnits="userSpaceOnUse" cx="34" cy="26" r="82">
+      <stop offset="0" stop-color="var(--p0-l)"/>
+      <stop offset=".55" stop-color="var(--p0)"/>
+      <stop offset="1" stop-color="var(--p0-s)"/>
+    </radialGradient>
+    <radialGradient id="g1" gradientUnits="userSpaceOnUse" cx="34" cy="26" r="82">
+      <stop offset="0" stop-color="var(--p1-l)"/>
+      <stop offset=".55" stop-color="var(--p1)"/>
+      <stop offset="1" stop-color="var(--p1-s)"/>
+    </radialGradient>
+    <radialGradient id="g2" gradientUnits="userSpaceOnUse" cx="34" cy="26" r="82">
+      <stop offset="0" stop-color="var(--p2-l)"/>
+      <stop offset=".55" stop-color="var(--p2)"/>
+      <stop offset="1" stop-color="var(--p2-s)"/>
+    </radialGradient>
+    <radialGradient id="g3" gradientUnits="userSpaceOnUse" cx="34" cy="26" r="82">
+      <stop offset="0" stop-color="var(--p3-l)"/>
+      <stop offset=".55" stop-color="var(--p3)"/>
+      <stop offset="1" stop-color="var(--p3-s)"/>
+    </radialGradient>
+    <radialGradient id="g4" gradientUnits="userSpaceOnUse" cx="34" cy="26" r="82">
+      <stop offset="0" stop-color="var(--p4-l)"/>
+      <stop offset=".55" stop-color="var(--p4)"/>
+      <stop offset="1" stop-color="var(--p4-s)"/>
+    </radialGradient>
+    <radialGradient id="g5" gradientUnits="userSpaceOnUse" cx="34" cy="26" r="82">
+      <stop offset="0" stop-color="var(--p5-l)"/>
+      <stop offset=".55" stop-color="var(--p5)"/>
+      <stop offset="1" stop-color="var(--p5-s)"/>
+    </radialGradient>
+
+    <!-- Il riflesso lucido, e l'ombra che si raccoglie sul fondo. -->
+    <linearGradient id="lucido" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="fondoscuro" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".26"/>
+    </linearGradient>
+    <linearGradient id="vetro" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#fff" stop-opacity=".26"/>
+      <stop offset=".18"  stop-color="#fff" stop-opacity=".05"/>
+      <stop offset=".72"  stop-color="#fff" stop-opacity=".02"/>
+      <stop offset=".88"  stop-color="#fff" stop-opacity=".16"/>
+      <stop offset="1"    stop-color="#fff" stop-opacity=".04"/>
+    </linearGradient>
+  </defs>
+</svg>
+
 <!-- Schermata di avvio: sparisce appena il gioco è pronto -->
 <div id="avvio" class="avvio">
   <div class="avvio__cane" id="avvio-cane"></div>
