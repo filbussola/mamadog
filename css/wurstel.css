@@ -1,0 +1,63 @@
+/* ============================================================================
+   wurstel.css — la vita della mascotte: coda, occhi, respiro, sonno.
+   ========================================================================== */
+
+.mascotte { display: block; }
+.mascotte svg, .cane { width: 100%; height: auto; display: block; overflow: visible; }
+
+.mascotte--grande  { width: min(58vw, 26rem); }
+.mascotte--piccola { width: 6.5rem; flex: 0 0 auto; }
+
+/* I gruppi animati ruotano attorno al punto giusto del disegno, non al centro
+   del riquadro: senza questo la coda gira come un'elica. */
+.w-coda, .w-testa, .w-corpo, .w-orecchio { transform-box: view-box; }
+
+/* --- Occhi: aperti di default, la palpebra chiusa sta sopra invisibile ----- */
+.w-occhio-chiuso { opacity: 0; }
+.mascotte--sbatte .w-occhio,
+.cane--dorme      .w-occhio        { opacity: 0; }
+.mascotte--sbatte .w-occhio-chiuso,
+.cane--dorme      .w-occhio-chiuso { opacity: 1; }
+
+/* --- Coda: scodinzola sempre, più forte quando è contento ----------------- */
+.w-coda { animation: scodinzola 1.9s ease-in-out infinite; }
+@keyframes scodinzola {
+  0%, 100% { transform: rotate(-8deg); }
+  50%      { transform: rotate(14deg); }
+}
+
+/* --- Respiro leggero del corpo, in continuo ------------------------------- */
+.w-corpo { animation: respira 3.4s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes respira { 50% { transform: scaleY(1.035); } }
+
+/* --- Stati ---------------------------------------------------------------- */
+.mascotte--felice .cane  { animation: saltello .62s cubic-bezier(.25,.9,.35,1.2) 2; }
+.mascotte--felice .w-coda { animation-duration: .3s; }
+@keyframes saltello {
+  0%, 100% { transform: translateY(0)     rotate(0); }
+  28%      { transform: translateY(-11%)  rotate(-3deg); }
+  55%      { transform: translateY(0)     rotate(0); }
+  74%      { transform: translateY(-4.5%) rotate(1.5deg); }
+}
+
+.mascotte--sorpreso .w-testa   { animation: inclina .55s cubic-bezier(.3,1.4,.4,1) both; }
+.mascotte--sorpreso .w-orecchio { animation: orecchie-su .55s cubic-bezier(.3,1.4,.4,1) both; }
+@keyframes inclina     { 50% { transform: rotate(-11deg) translateY(-3px); } }
+@keyframes orecchie-su { 50% { transform: rotate(-16deg); } }
+
+.mascotte--dorme .w-coda  { animation-duration: 5s; }
+.mascotte--dorme .w-corpo { animation-duration: 5.2s; }
+.mascotte--dorme .w-occhio        { opacity: 0; }
+.mascotte--dorme .w-occhio-chiuso { opacity: 1; }
+
+/* --- zzz ------------------------------------------------------------------ */
+.w-sonno { opacity: 0; }
+.mascotte--dorme .w-sonno { animation: sbadiglio 3s ease-in-out infinite; }
+@keyframes sbadiglio {
+  0%   { opacity: 0;  transform: translate(0, 6px); }
+  35%  { opacity: .95; }
+  100% { opacity: 0;  transform: translate(10px, -20px); }
+}
+
+/* Wurstel guarda verso il tavolo quando è in una barra in alto a destra */
+.mascotte--piccola .cane { transform: scaleX(-1); }

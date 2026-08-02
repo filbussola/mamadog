@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wurstel",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/servi.mjs"],
+      "port": 8080
+    }
+  ]
+}

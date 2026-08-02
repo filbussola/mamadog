@@ -1,0 +1,12 @@
+{
+  "name": "cuccia-di-wurstel",
+  "version": "1.0.0",
+  "description": "Giochi tranquilli senza pubblicita per iPad: match-3 e barattoli, con il bassotto Wurstel.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prova": "node tools/prova.mjs",
+    "servi": "node tools/servi.mjs",
+    "icone": "node tools/genera-icone.mjs"
+  }
+}

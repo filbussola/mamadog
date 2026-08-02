@@ -1,0 +1,126 @@
+/* ============================================================================
+   hub.css — la casa e la cuccia degli amici.
+   ========================================================================== */
+
+.schermo--hub { gap: .5rem; }
+
+.hub__testa {
+  flex: 0 0 auto;
+  display: flex; align-items: center; gap: 1rem;
+  padding: .9rem 1.2rem .2rem;
+}
+.hub__titolo {
+  flex: 1 1 auto;
+  font-size: clamp(1.4rem, 4.2vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+.hub__titolo span { color: var(--ambra); }
+
+/* Wurstel prende tutto lo spazio che avanza, ma non spinge mai fuori i
+   bottoni: sono quelli che servono davvero. */
+.hub__cane {
+  flex: 1 1 auto;
+  min-height: 5rem;
+  display: grid; place-items: center;
+  position: relative;
+  padding: 0 1rem;
+}
+.hub__cane .mascotte { width: min(62vw, 27rem); max-height: 100%; }
+.hub__cane .mascotte svg { max-height: 100%; }
+.hub__cane .fumetto { top: 0; left: 50%; transform: translateX(-50%); }
+
+.hub__giochi {
+  flex: 0 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  padding: 0 1.2rem;
+}
+
+.carta-gioco {
+  display: flex; flex-direction: column; align-items: center; gap: .35rem;
+  padding: 1.1rem .8rem 1rem;
+  border-radius: var(--raggio);
+  background: var(--pannello);
+  box-shadow: var(--ombra);
+  transition: transform .14s ease, background .14s ease;
+}
+.carta-gioco:active { transform: scale(.96); background: var(--pannello-alto); }
+.carta-gioco__arte { width: min(26vw, 6.5rem); }
+.carta-gioco__arte svg { width: 100%; height: auto; display: block; }
+.carta-gioco__nome  { font-size: 1.2rem; font-weight: 800; }
+.carta-gioco__sotto { font-size: .95rem; color: var(--inchiostro-tenue); }
+
+.hub__cuccia {
+  flex: 0 0 auto;
+  margin: 1rem 1.2rem 1.3rem;
+  min-height: 4.2rem;
+  display: flex; align-items: center; gap: .9rem;
+  padding: 0 1.3rem;
+  border-radius: 2.2rem;
+  background: color-mix(in srgb, var(--pannello) 85%, transparent);
+  box-shadow: var(--ombra);
+  transition: transform .14s ease;
+}
+.hub__cuccia:active { transform: scale(.97); }
+.hub__cuccia-icona { font-size: 1.7rem; }
+.hub__cuccia-testo { flex: 1 1 auto; text-align: left; font-weight: 700; }
+.hub__cuccia-conto {
+  min-width: 2.4rem; height: 2.4rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--ambra);
+  color: #2a1c08; font-weight: 800;
+}
+
+/* --- La cuccia ------------------------------------------------------------ */
+.amici {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 1rem;
+  align-content: start;
+  padding: .5rem 1.2rem 2rem;
+}
+
+.amico {
+  display: flex; flex-direction: column; align-items: center; gap: .15rem;
+  padding: 1rem .6rem .8rem;
+  border-radius: var(--raggio);
+  background: var(--pannello);
+  box-shadow: var(--ombra);
+  transition: transform .14s ease;
+}
+.amico:active { transform: scale(.95); }
+.amico__cane  { width: 92%; margin-bottom: .3rem; }
+.amico__cane svg { width: 100%; height: auto; display: block; }
+.amico__nome  { font-weight: 800; font-size: 1.1rem; }
+.amico__razza { font-size: .9rem; color: var(--inchiostro-tenue); }
+
+.cuccia-vuota {
+  grid-column: 1 / -1;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--inchiostro-tenue);
+  line-height: 1.7;
+}
+
+.pannello__nota { margin-top: 1rem; color: var(--inchiostro-tenue); }
+
+/* --- iPad in orizzontale: cane a sinistra, scelte a destra ---------------- */
+@media (orientation: landscape) and (min-width: 700px) {
+  .schermo--hub {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    align-items: center;
+    column-gap: 1rem;
+  }
+  .hub__testa   { grid-column: 1 / -1; }
+  .hub__cane    { grid-row: 2; grid-column: 1; }
+  .hub__giochi  { grid-row: 2; grid-column: 2; align-self: center; }
+  .hub__cuccia  { grid-row: 3; grid-column: 2; margin-top: 0; }
+}

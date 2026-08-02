@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>La cuccia di Wurstel</title>
+<meta name="description" content="Giochi tranquilli senza pubblicità, senza timer e senza vite. Un match-3 e i barattoli di biscotti, con il bassotto Wurstel.">
+
+<meta name="theme-color" content="#1b1520">
+<meta name="color-scheme" content="dark light">
+
+<!-- iPad: aggiungendo alla Home diventa un'app a schermo intero -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wurstel">
+<meta name="format-detection" content="telephone=no">
+
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<link rel="icon" type="image/png" href="./icons/icon-192.png">
+
+<link rel="stylesheet" href="./css/base.css">
+<link rel="stylesheet" href="./css/wurstel.css">
+<link rel="stylesheet" href="./css/hub.css">
+<link rel="stylesheet" href="./css/match3.css">
+<link rel="stylesheet" href="./css/barattoli.css">
+</head>
+<body>
+
+<!-- Schermata di avvio: sparisce appena il gioco è pronto -->
+<div id="avvio" class="avvio">
+  <div class="avvio__cane" id="avvio-cane"></div>
+  <p class="avvio__testo">La cuccia di Wurstel</p>
+</div>
+
+<main id="app" class="app" hidden>
+
+  <!-- ------------------------------------------------------------------ HUB -->
+  <section id="schermo-hub" class="schermo schermo--hub" data-schermo="hub">
+    <header class="hub__testa">
+      <h1 class="hub__titolo">La cuccia di <span>Wurstel</span></h1>
+      <button class="bottone-tondo" id="apri-impostazioni" type="button" aria-label="Impostazioni">
+        <span class="bottone-tondo__icona" aria-hidden="true">⚙</span>
+      </button>
+    </header>
+
+    <div class="hub__cane">
+      <div class="mascotte mascotte--grande" id="hub-wurstel"></div>
+      <p class="fumetto" id="hub-fumetto" hidden></p>
+    </div>
+
+    <nav class="hub__giochi">
+      <button class="carta-gioco carta-gioco--match3" type="button" data-vai="match3">
+        <span class="carta-gioco__arte" id="arte-match3" aria-hidden="true"></span>
+        <span class="carta-gioco__nome">Ossi e impronte</span>
+        <span class="carta-gioco__sotto" id="sotto-match3">Livello 1</span>
+      </button>
+      <button class="carta-gioco carta-gioco--barattoli" type="button" data-vai="barattoli">
+        <span class="carta-gioco__arte" id="arte-barattoli" aria-hidden="true"></span>
+        <span class="carta-gioco__nome">I barattoli</span>
+        <span class="carta-gioco__sotto" id="sotto-barattoli">Livello 1</span>
+      </button>
+    </nav>
+
+    <button class="hub__cuccia" type="button" data-vai="cuccia">
+      <span class="hub__cuccia-icona" aria-hidden="true">🏠</span>
+      <span class="hub__cuccia-testo">Gli amici della cuccia</span>
+      <span class="hub__cuccia-conto" id="conto-amici">0</span>
+    </button>
+  </section>
+
+  <!-- -------------------------------------------------------------- MATCH-3 -->
+  <section id="schermo-match3" class="schermo schermo--gioco" data-schermo="match3" hidden>
+    <header class="barra">
+      <button class="bottone-tondo" type="button" data-vai="hub" aria-label="Torna alla cuccia">
+        <span class="bottone-tondo__icona" aria-hidden="true">‹</span>
+      </button>
+      <div class="barra__centro">
+        <p class="barra__livello">Livello <span id="m3-livello">1</span></p>
+        <div class="obiettivo">
+          <span class="obiettivo__icona" id="m3-obiettivo-icona" aria-hidden="true"></span>
+          <div class="obiettivo__barra"><div class="obiettivo__riempi" id="m3-obiettivo-riempi"></div></div>
+          <span class="obiettivo__conto" id="m3-obiettivo-conto">0/20</span>
+        </div>
+      </div>
+      <div class="mascotte mascotte--piccola" id="m3-wurstel"></div>
+    </header>
+
+    <div class="tavolo" id="m3-tavolo">
+      <div class="griglia" id="m3-griglia"></div>
+      <p class="fumetto fumetto--gioco" id="m3-fumetto" hidden></p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------ BARATTOLI -->
+  <section id="schermo-barattoli" class="schermo schermo--gioco" data-schermo="barattoli" hidden>
+    <header class="barra">
+      <button class="bottone-tondo" type="button" data-vai="hub" aria-label="Torna alla cuccia">
+        <span class="bottone-tondo__icona" aria-hidden="true">‹</span>
+      </button>
+      <div class="barra__centro">
+        <p class="barra__livello">Livello <span id="ba-livello">1</span></p>
+        <p class="barra__aiuto">Tocca un barattolo, poi un altro</p>
+      </div>
+      <div class="mascotte mascotte--piccola" id="ba-wurstel"></div>
+    </header>
+
+    <div class="tavolo" id="ba-tavolo">
+      <div class="scaffale" id="ba-scaffale"></div>
+      <p class="fumetto fumetto--gioco" id="ba-fumetto" hidden></p>
+    </div>
+
+    <footer class="attrezzi">
+      <button class="bottone-largo" type="button" id="ba-annulla">
+        <span aria-hidden="true">↺</span> Annulla
+      </button>
+      <button class="bottone-largo bottone-largo--tenue" type="button" id="ba-ricomincia">
+        <span aria-hidden="true">⟲</span> Ricomincia
+      </button>
+    </footer>
+  </section>
+
+  <!-- --------------------------------------------------------------- CUCCIA -->
+  <section id="schermo-cuccia" class="schermo schermo--cuccia" data-schermo="cuccia" hidden>
+    <header class="barra">
+      <button class="bottone-tondo" type="button" data-vai="hub" aria-label="Torna alla cuccia">
+        <span class="bottone-tondo__icona" aria-hidden="true">‹</span>
+      </button>
+      <div class="barra__centro">
+        <p class="barra__livello">Gli amici della cuccia</p>
+        <p class="barra__aiuto" id="cuccia-prossimo">Un nuovo amico ogni 5 livelli</p>
+      </div>
+      <div class="mascotte mascotte--piccola" id="cu-wurstel"></div>
+    </header>
+    <div class="amici" id="cuccia-amici"></div>
+  </section>
+
+</main>
+
+<!-- Pannelli sovrapposti: festa di fine livello, nuovo amico, impostazioni -->
+<div class="velo" id="velo" hidden></div>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
