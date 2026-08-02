@@ -12,6 +12,20 @@ timer, niente vite.** Si apre, si gioca, si chiude quando si vuole.
 Un nuovo amico arriva nella cuccia ogni cinque livelli. Livelli e amici sono
 generati: non finiscono mai.
 
+## Il salvataggio di riserva
+
+La memoria del browser non è per sempre: un ripristino del tablet, un "cancella
+dati siti" dato per sbaglio, un cambio di iPad, e mesi di cagnolini sparirebbero
+senza rimedio. In **Impostazioni** c'è un codice corto — tipo
+`WURSTEL-1-14-9-512-23-2-2G` — da copiare e tenere in una nota o in un
+messaggio: rimette livelli, amici, biscotti e preferenze com'erano.
+
+Nel codice non finisce la partita in corso, ma solo quello a cui ci si
+affeziona. È la scelta che lo tiene lungo venti caratteri invece che mille,
+abbastanza corto da poterlo perfino ridigitare a mano. Ripristinando, la
+partita a metà ricomincia dall'inizio del suo livello: è l'unica cosa che si
+perde, e non vale niente.
+
 ## Le cinque regole di design
 
 Sono la ragione per cui questo gioco esiste; ogni scelta tecnica ci si piega.

@@ -179,5 +179,93 @@ console.log('\nBARATTOLI');
 }
 
 /* -------------------------------------------------------------------------- */
+console.log('\nSALVATAGGIO DI RISERVA');
+
+{
+  /* store.js si aggancia agli eventi del browser per salvare quando l'app va
+     in secondo piano. Qui quel mondo non c'è: gliene diamo uno finto e muto,
+     invece di sporcare il codice vero di controlli che servono solo al test.
+     (localStorage resta assente apposta: store.js se ne accorge da solo e
+     continua a funzionare tenendo tutto in memoria.) */
+  globalThis.document = { addEventListener() {}, visibilityState: 'visible' };
+  globalThis.window = { addEventListener() {} };
+
+  const { stato } = await import('../js/store.js');
+  const { creaCodice, leggiCodice, riassunto, applicaCodice, amiciDi } =
+    await import('../js/riserva.js');
+
+  /* Un giro completo: si finge una partita avanzata, si genera il codice, si
+     azzera tutto e si vede se torna esattamente com'era. */
+  Object.assign(stato, {
+    biscotti: 1234, livelliCompletati: 47, amici: [],
+    impostazioni: { tema: 'giorno', audio: false },
+    match3: { livello: 31, partita: { griglia: 'roba' } },
+    barattoli: { livello: 18, partita: { barattoli: [] } },
+  });
+
+  const codice = creaCodice();
+  prova('il codice comincia con WURSTEL', codice.startsWith('WURSTEL-'), codice);
+  prova('il codice sta in una riga sola', codice.length <= 32, `${codice.length} caratteri`);
+
+  Object.assign(stato, {
+    biscotti: 0, livelliCompletati: 0, amici: [1, 2, 3],
+    impostazioni: { tema: 'sera', audio: true },
+    match3: { livello: 1, partita: null }, barattoli: { livello: 1, partita: null },
+  });
+
+  const letto = leggiCodice(codice);
+  prova('il codice si rilegge', letto.valido, letto.motivo);
+  if (letto.valido) applicaCodice(letto.dati);
+
+  prova('torna il livello del match-3', stato.match3.livello === 31);
+  prova('torna il livello dei barattoli', stato.barattoli.livello === 18);
+  prova('tornano i biscotti', stato.biscotti === 1234);
+  prova('tornano i livelli finiti', stato.livelliCompletati === 47);
+  prova('tornano gli amici giusti', stato.amici.length === amiciDi(47) && stato.amici[0] === 0,
+        `${stato.amici.length} amici`);
+  prova('tornano le impostazioni',
+        stato.impostazioni.tema === 'giorno' && stato.impostazioni.audio === false);
+  prova('la partita in corso viene azzerata',
+        stato.match3.partita === null && stato.barattoli.partita === null);
+  prova('il riassunto è leggibile', /Livello 31 .* 9 amici .* 1234 biscotti/.test(riassunto(letto.dati)),
+        riassunto(letto.dati));
+
+  /* Un codice storpiato non deve MAI passare: sovrascriverebbe i progressi
+     con dati sbagliati, che è peggio che non ripristinare niente. */
+  prova('rifiuta un codice troncato', !leggiCodice(codice.slice(0, -4)).valido);
+  prova('rifiuta una cifra cambiata',
+        !leggiCodice(codice.replace('-31-', '-32-')).valido);
+  prova('rifiuta testo qualsiasi', !leggiCodice('ciao mamma').valido);
+
+  /* Un messaggio sbagliato è peggio di nessun messaggio: chi ha copiato metà
+     codice non deve sentirsi dire che non è un codice di Wurstel. */
+  const monco = leggiCodice(codice.split('-').slice(0, 7).join('-'));
+  prova('a un codice monco dice che è incompleto, non che è di un altro gioco',
+        !monco.valido && /incompleto/i.test(monco.motivo), monco.motivo);
+  const estraneo = leggiCodice('PIPPO-1-2-3-4-5-6-AA');
+  prova('a un codice estraneo dice che non è di Wurstel',
+        !estraneo.valido && /cominciare con WURSTEL/.test(estraneo.motivo), estraneo.motivo);
+  prova('rifiuta il vuoto', !leggiCodice('').valido);
+  prova('rifiuta un controllo sbagliato', !leggiCodice(codice.slice(0, -2) + 'ZZ').valido);
+
+  /* Perdona invece le cose che succedono davvero copiando e incollando. */
+  prova('perdona spazi e minuscole', leggiCodice(`  ${codice.toLowerCase()} `).valido);
+  prova('perdona i trattini lunghi del correttore',
+        leggiCodice(codice.replace(/-/g, '–')).valido);
+
+  let sempre = true;
+  for (let n = 0; n < 500; n++) {
+    Object.assign(stato, {
+      biscotti: n * 37, livelliCompletati: n,
+      match3: { livello: n + 1, partita: null }, barattoli: { livello: n * 2 + 1, partita: null },
+      impostazioni: { tema: n % 2 ? 'giorno' : 'sera', audio: n % 3 === 0 },
+    });
+    const r = leggiCodice(creaCodice());
+    if (!r.valido || r.dati.m3 !== n + 1 || r.dati.completati !== n) sempre = false;
+  }
+  prova('cinquecento partite diverse fanno tutte andata e ritorno', sempre);
+}
+
+/* -------------------------------------------------------------------------- */
 console.log(falliti ? `\n${falliti} prove non superate\n` : '\nTutto a posto.\n');
 process.exit(falliti ? 1 : 0);
