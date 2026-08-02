@@ -37,15 +37,18 @@
 }
 
 .carta-gioco {
+  position: relative;
   display: flex; flex-direction: column; align-items: center; gap: .35rem;
   padding: 1.1rem .8rem 1rem;
   border-radius: var(--raggio);
-  background: var(--pannello);
-  box-shadow: var(--ombra);
-  transition: transform .14s ease, background .14s ease;
+  background:
+    radial-gradient(110% 60% at 50% -8%, rgb(255 180 84 / .10), transparent 62%),
+    linear-gradient(180deg, var(--pannello-alto), var(--pannello));
+  box-shadow: var(--luce-bordo), var(--ombra);
+  transition: transform .14s ease, filter .14s ease;
 }
-.carta-gioco:active { transform: scale(.96); background: var(--pannello-alto); }
-.carta-gioco__arte { width: min(26vw, 6.5rem); }
+.carta-gioco:active { transform: scale(.96) translateY(2px); filter: brightness(1.1); }
+.carta-gioco__arte { width: min(26vw, 6.5rem); filter: drop-shadow(0 .2rem .4rem rgb(0 0 0 / .28)); }
 .carta-gioco__arte svg { width: 100%; height: auto; display: block; }
 .carta-gioco__nome  { font-size: 1.2rem; font-weight: 800; }
 .carta-gioco__sotto { font-size: .95rem; color: var(--inchiostro-tenue); }
@@ -57,19 +60,21 @@
   display: flex; align-items: center; gap: .9rem;
   padding: 0 1.3rem;
   border-radius: 2.2rem;
-  background: color-mix(in srgb, var(--pannello) 85%, transparent);
-  box-shadow: var(--ombra);
-  transition: transform .14s ease;
+  background: linear-gradient(180deg, var(--pannello-alto), var(--pannello));
+  box-shadow: var(--luce-bordo), var(--ombra);
+  transition: transform .14s ease, filter .14s ease;
 }
-.hub__cuccia:active { transform: scale(.97); }
+.hub__cuccia:active { transform: scale(.97) translateY(1px); filter: brightness(1.1); }
 .hub__cuccia-icona { font-size: 1.7rem; }
 .hub__cuccia-testo { flex: 1 1 auto; text-align: left; font-weight: 700; }
 .hub__cuccia-conto {
   min-width: 2.4rem; height: 2.4rem;
   display: grid; place-items: center;
   border-radius: 50%;
-  background: var(--ambra);
-  color: #2a1c08; font-weight: 800;
+  background: linear-gradient(180deg, var(--ambra), var(--ambra-2));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .4),
+              0 .2rem .5rem color-mix(in srgb, var(--ambra) 35%, transparent);
+  color: #2f1f06; font-weight: 800;
 }
 
 /* --- La cuccia ------------------------------------------------------------ */
@@ -90,11 +95,13 @@
   display: flex; flex-direction: column; align-items: center; gap: .15rem;
   padding: 1rem .6rem .8rem;
   border-radius: var(--raggio);
-  background: var(--pannello);
-  box-shadow: var(--ombra);
-  transition: transform .14s ease;
+  background:
+    radial-gradient(110% 62% at 50% -6%, rgb(255 180 84 / .09), transparent 60%),
+    linear-gradient(180deg, var(--pannello-alto), var(--pannello));
+  box-shadow: var(--luce-bordo), var(--ombra);
+  transition: transform .14s ease, filter .14s ease;
 }
-.amico:active { transform: scale(.95); }
+.amico:active { transform: scale(.95); filter: brightness(1.1); }
 .amico__cane  { width: 92%; margin-bottom: .3rem; }
 .amico__cane svg { width: 100%; height: auto; display: block; }
 .amico__nome  { font-weight: 800; font-size: 1.1rem; }

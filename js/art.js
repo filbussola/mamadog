@@ -7,6 +7,18 @@
 let contatoreId = 0;
 const nuovoId = (p) => `${p}${++contatoreId}`;
 
+/** Schiarisce o scurisce una tinta: serve a ricavare le sfumature del pelo
+    da un colore solo, così ogni cane della collezione resta coerente. */
+function verso(esa, meta, quanto) {
+  const n = parseInt(esa.slice(1), 16);
+  const t = meta === 'chiaro' ? 255 : 0;
+  const canale = (spostamento) => {
+    const v = (n >> spostamento) & 255;
+    return Math.round(v + (t - v) * quanto);
+  };
+  return `rgb(${canale(16)} ${canale(8)} ${canale(0)})`;
+}
+
 /* Numeri casuali ripetibili: lo stesso seme dà sempre lo stesso cane. */
 export function rng(seme) {
   let s = (seme >>> 0) || 1;
@@ -44,6 +56,8 @@ export function caneSvg(opzioni = {}) {
   const W = nx + 18, H = suolo + 12;
 
   const clip = nuovoId('corpo');
+  const gCorpo = nuovoId('pelo');
+  const gTesta = nuovoId('testa');
   const corpoD =
     `M ${bx0} ${by0} H ${bx1} A 26 26 0 0 1 ${bx1} ${by1} ` +
     `H ${bx0} A 26 26 0 0 1 ${bx0} ${by0} Z`;
@@ -88,6 +102,23 @@ export function caneSvg(opzioni = {}) {
 
   return `
 <svg class="cane" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="un cagnolino">
+  <defs>
+    <linearGradient id="${gCorpo}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="${verso(o.pelo, 'chiaro', .20)}"/>
+      <stop offset=".52" stop-color="${o.pelo}"/>
+      <stop offset="1"   stop-color="${verso(o.pelo, 'scuro', .17)}"/>
+    </linearGradient>
+    <radialGradient id="${gTesta}" cx="34%" cy="26%" r="80%">
+      <stop offset="0"   stop-color="${verso(o.pelo, 'chiaro', .26)}"/>
+      <stop offset=".58" stop-color="${o.pelo}"/>
+      <stop offset="1"   stop-color="${verso(o.pelo, 'scuro', .16)}"/>
+    </radialGradient>
+  </defs>
+
+  <!-- l'ombra a terra: senza, il cane galleggia -->
+  <ellipse cx="${(bx0 + bx1) / 2 + 10}" cy="${suolo + 3}" rx="${o.lungo / 2 + 26}" ry="8"
+           fill="#000" opacity=".17"/>
+
   <!-- coda -->
   <g class="w-coda" style="transform-origin:${bx0 + 6}px ${by0 + 12}px">
     <path d="M ${bx0 + 8} ${by0 + 14} C ${bx0 - 12} ${by0 + 8} ${bx0 - 26} ${by0 - 4} ${bx0 - 30} ${by0 - 28}"
@@ -102,10 +133,12 @@ export function caneSvg(opzioni = {}) {
   <!-- corpo -->
   <g class="w-corpo">
     <clipPath id="${clip}"><path d="${corpoD}"/></clipPath>
-    <path d="${corpoD}" fill="${o.pelo}"/>
+    <path d="${corpoD}" fill="url(#${gCorpo})"/>
     <g clip-path="url(#${clip})">
       <ellipse cx="${(bx0 + bx1) / 2}" cy="${by1 + 4}" rx="${o.lungo / 2 - 4}" ry="20" fill="${o.pancia}"/>
       ${macchie.join('')}
+      <!-- il colletto d'ombra dove il corpo sparisce dietro la testa -->
+      <ellipse cx="${bx1 + 4}" cy="${(by0 + by1) / 2}" rx="20" ry="34" fill="#000" opacity=".13"/>
     </g>
   </g>
 
@@ -117,9 +150,12 @@ export function caneSvg(opzioni = {}) {
 
   <!-- testa -->
   <g class="w-testa" style="transform-origin:${bx1}px ${by1 - 10}px">
-    <ellipse cx="${tx}" cy="${ty}" rx="31" ry="29" fill="${o.pelo}"/>
+    <ellipse cx="${tx}" cy="${ty}" rx="31" ry="29" fill="url(#${gTesta})"/>
+    <ellipse cx="${tx - 4}" cy="${ty + 13}" rx="12" ry="7" fill="#ff8fa3" opacity=".2"/>
     <ellipse cx="${mx}" cy="${my}" rx="23" ry="16" fill="${o.muso}"/>
+    <ellipse cx="${mx}" cy="${my + 6}" rx="20" ry="10" fill="#000" opacity=".07"/>
     <ellipse cx="${nx}" cy="${ny}" rx="8" ry="7" fill="#3b2b24"/>
+    <ellipse cx="${nx - 2}" cy="${ny - 2.5}" rx="3" ry="2" fill="#fff" opacity=".33"/>
     <path d="M ${nx - 3} ${ny + 7} q -6 8 -13 3" stroke="#3b2b24" stroke-width="3"
           stroke-linecap="round" fill="none"/>
 
@@ -152,8 +188,10 @@ export function caneSvg(opzioni = {}) {
 export const PEZZI_AL_PLURALE = ['gli ossi', 'le impronte', 'le palline', 'le ciotole', 'i cuori', 'le stelle'];
 
 function corpoPezzo(tipo) {
-  const c = `var(--p${tipo})`, s = `var(--p${tipo}-s)`;
-  const linea = `fill="${c}" stroke="${s}" stroke-width="4" stroke-linejoin="round"`;
+  /* Il riempimento è il gradiente condiviso: una sola sorgente di luce per
+     tutto il pezzo, non una per ogni cerchietto che lo compone. */
+  const c = `url(#g${tipo})`, s = `var(--p${tipo}-s)`;
+  const linea = `fill="${c}" stroke="${s}" stroke-width="3.6" stroke-linejoin="round"`;
 
   switch (tipo) {
     case 0: // osso
@@ -162,7 +200,8 @@ function corpoPezzo(tipo) {
         <circle cx="28" cy="36" r="14"/><circle cx="28" cy="64" r="14"/>
         <circle cx="72" cy="36" r="14"/><circle cx="72" cy="64" r="14"/>
       </g>
-      <rect x="26" y="42" width="48" height="16" rx="8" fill="${c}"/>`;
+      <rect x="26" y="41.5" width="48" height="17" rx="8.5" fill="${c}"/>
+      <rect x="30" y="60" width="40" height="14" rx="7" fill="url(#fondoscuro)" opacity=".55"/>`;
 
     case 1: // impronta
       return `<g ${linea}>
@@ -171,34 +210,44 @@ function corpoPezzo(tipo) {
         <ellipse cx="42" cy="31" rx="10.5" ry="13.5"/>
         <ellipse cx="60" cy="31" rx="10.5" ry="13.5"/>
         <ellipse cx="76" cy="42" rx="10" ry="12.5"/>
-      </g>`;
+      </g>
+      <ellipse cx="50" cy="72" rx="20" ry="12" fill="url(#fondoscuro)" opacity=".5"/>`;
 
     case 2: // pallina da tennis
       return `<circle cx="50" cy="50" r="31" ${linea}/>
+        <circle cx="50" cy="58" r="27" fill="url(#fondoscuro)" opacity=".55"/>
         <path d="M22 30 q16 20 0 40 M78 30 q-16 20 0 40"
-              fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".75"/>`;
+              fill="none" stroke="#fffdf6" stroke-width="4" stroke-linecap="round" opacity=".82"/>`;
 
     case 3: // ciotola
       return `<g ${linea}>
         <path d="M19 45 H81 L71 76 Q50 87 29 76 Z"/>
         <ellipse cx="50" cy="45" rx="31" ry="9"/>
       </g>
-      <ellipse cx="50" cy="45" rx="24" ry="5.5" fill="${s}" opacity=".55"/>`;
+      <ellipse cx="50" cy="45.5" rx="23" ry="5.4" fill="${s}"/>
+      <ellipse cx="50" cy="44" rx="23" ry="5.4" fill="#000" opacity=".22"/>
+      <path d="M31 70 Q50 80 69 70 L71 76 Q50 87 29 76 Z" fill="url(#fondoscuro)" opacity=".7"/>`;
 
     case 4: // cuore
       return `<path ${linea}
-        d="M50 82 C18 60 14 37 29 26 C40 18 50 27 50 35 C50 27 60 18 71 26 C86 37 82 60 50 82 Z"/>`;
+        d="M50 82 C18 60 14 37 29 26 C40 18 50 27 50 35 C50 27 60 18 71 26 C86 37 82 60 50 82 Z"/>
+      <path d="M50 82 C32 70 22 58 19 47 C26 66 36 74 50 82 Z" fill="url(#fondoscuro)" opacity=".45"/>`;
 
     default: // stella
       return `<path ${linea}
-        d="M50 17 L61 40 L86 43 L68 61 L72 86 L50 74 L28 86 L32 61 L14 43 L39 40 Z"/>`;
+        d="M50 17 L61 40 L86 43 L68 61 L72 86 L50 74 L28 86 L32 61 L14 43 L39 40 Z"/>
+      <path d="M50 74 L72 86 L68 61 Z" fill="url(#fondoscuro)" opacity=".5"/>`;
   }
 }
 
 /* Il riflesso in alto a sinistra: è quello che fa sembrare i pezzi oggetti
-   veri e non figure piatte. */
-const RIFLESSO = `<ellipse cx="36" cy="27" rx="13" ry="8"
-  fill="#fff" opacity=".3" transform="rotate(-24 36 27)"/>`;
+   veri e non figure piatte. Sfumato, non un'ellisse opaca: un riflesso ha un
+   bordo morbido, altrimenti sembra una macchia di vernice. */
+const RIFLESSO = `
+  <ellipse cx="37" cy="27" rx="14.5" ry="8.5" fill="url(#lucido)"
+           transform="rotate(-24 37 27)"/>
+  <ellipse cx="33" cy="24" rx="5.5" ry="3.2" fill="#fff" opacity=".55"
+           transform="rotate(-24 33 24)"/>`;
 
 function decorazioneSpeciale(speciale) {
   if (speciale === 'riga' || speciale === 'colonna') {
@@ -259,12 +308,14 @@ export const COLORI_BISCOTTO = [
 export function biscottoSvg(colore) {
   const c = COLORI_BISCOTTO[colore % COLORI_BISCOTTO.length];
   return `<svg viewBox="0 0 100 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <g fill="${c}" stroke="rgb(0 0 0 / .28)" stroke-width="3" stroke-linejoin="round">
+    <g fill="${c}" stroke="rgb(0 0 0 / .3)" stroke-width="3" stroke-linejoin="round">
       <rect x="20" y="12" width="60" height="24" rx="12"/>
       <circle cx="22" cy="14" r="12"/><circle cx="22" cy="34" r="12"/>
       <circle cx="78" cy="14" r="12"/><circle cx="78" cy="34" r="12"/>
     </g>
-    <rect x="24" y="16" width="52" height="8" rx="4" fill="#fff" opacity=".28"/>
+    <!-- fondo in ombra e cresta lucida: due strisce, e il biscotto ha spessore -->
+    <rect x="14" y="28" width="72" height="18" rx="9" fill="url(#fondoscuro)" opacity=".6"/>
+    <rect x="26" y="13" width="48" height="10" rx="5" fill="url(#lucido)"/>
   </svg>`;
 }
 
