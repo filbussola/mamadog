@@ -297,6 +297,33 @@ export function pezzoSvg(tipo, speciale = null) {
 }
 
 /* ============================================================================
+   LE FOGLIE
+   Stanno sotto le tessere, quindi devono farsi vedere senza rubare la scena:
+   verde spento, contorni morbidi, nessun dettaglio che competa con i pezzi.
+   Due strati si distinguono per densità, non solo per tinta — anche di sera,
+   anche con gli occhi stanchi.
+   ========================================================================== */
+
+const FOGLIOLINA = 'M0 -17 C 12 -10 15 5 0 17 C -15 5 -12 -10 0 -17 Z';
+
+export function fogliaSvg(strati = 1) {
+  const doppia = strati >= 2;
+  const tinta = doppia ? 'var(--foglia-scura)' : 'var(--foglia)';
+  const foglia = (x, y, gradi, scala) =>
+    `<path d="${FOGLIOLINA}" fill="#fff" opacity="${doppia ? .2 : .16}"
+           transform="translate(${x} ${y}) rotate(${gradi}) scale(${scala})"/>`;
+
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="3" y="3" width="94" height="94" rx="26" fill="${tinta}" opacity="${doppia ? .95 : .8}"/>
+    ${foglia(32, 34, -28, 1.05)}
+    ${foglia(66, 44, 22, .9)}
+    ${foglia(46, 70, -6, .8)}
+    ${doppia ? `<rect x="9" y="9" width="82" height="82" rx="21" fill="none"
+                      stroke="var(--foglia)" stroke-width="5" opacity=".85"/>` : ''}
+  </svg>`;
+}
+
+/* ============================================================================
    I BISCOTTI DEI BARATTOLI
    ========================================================================== */
 

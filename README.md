@@ -6,6 +6,8 @@ timer, niente vite.** Si apre, si gioca, si chiude quando si vuole.
 
 - **Ossi e impronte** — un match-3 alla Candy Crush, ma senza limiti di mosse
   e senza "livello fallito": si va avanti finché l'obiettivo è raggiunto.
+  In certi livelli il tavolo è coperto di **foglie** da liberare facendo le
+  mosse sopra di esse: è l'unico ostacolo, e non blocca né incastra mai nulla.
 - **I barattoli** — biscotti colorati da ordinare travasandoli. Ogni livello è
   verificato risolvibile prima di comparire, e si annulla quante volte si vuole.
 

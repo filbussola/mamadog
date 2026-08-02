@@ -22,8 +22,20 @@ const tipoACaso = (g) => Math.floor(Math.random() * g.nTipi);
 
 /* --- Creazione ------------------------------------------------------------- */
 
-export function creaGriglia({ colonne = 8, righe = 8, nTipi = 5 } = {}) {
-  const g = { colonne, righe, nTipi, celle: new Array(colonne * righe).fill(null), prossimoId: 1 };
+/**
+ * `foglie` è uno strato sotto le tessere: ogni casella può averne 0, 1 o 2.
+ * Non bloccano niente e non si possono toccare direttamente — si consumano
+ * quando un pezzo sopra di loro sparisce. È l'ostacolo più gentile che esista:
+ * dà un obiettivo nuovo e una difficoltà vera senza mai poter incastrare
+ * nessuno, che è il requisito di questo gioco.
+ */
+export function creaGriglia({ colonne = 8, righe = 8, nTipi = 5, foglie = null } = {}) {
+  const g = {
+    colonne, righe, nTipi,
+    celle: new Array(colonne * righe).fill(null),
+    foglie: foglie ? foglie.slice() : new Array(colonne * righe).fill(0),
+    prossimoId: 1,
+  };
 
   /* Si riempie evitando di chiudere subito un tris: il tavolo iniziale deve
      essere pulito, altrimenti il gioco "esplode" da solo appena si apre. */
@@ -241,6 +253,16 @@ function passoRimozione(g, rimossi, esplosi, creati, gradino) {
   }
 
   const indici = [...rimossi];
+
+  /* Ogni pezzo che sparisce consuma uno strato di foglie sotto di sé. */
+  const foglieTolte = [];
+  for (const i of indici) {
+    if (g.foglie[i] > 0) {
+      g.foglie[i] -= 1;
+      foglieTolte.push({ indice: i, rimaste: g.foglie[i] });
+    }
+  }
+
   for (const i of indici) g.celle[i] = null;
 
   for (const c of creati) {
@@ -258,6 +280,7 @@ function passoRimozione(g, rimossi, esplosi, creati, gradino) {
     tipo: 'rimozione',
     indici,
     esplosi,
+    foglieTolte,
     /* La vista deve poter ricostruire il pezzo nuovo senza rileggere la
        griglia: il tipo va letto DOPO la trasformazione in arcobaleno. */
     creati: creati.map((c) => ({
@@ -279,6 +302,7 @@ function risolvi(g, primoColpo = null, origine = null) {
   let punti = 0;
   const conteggioTipi = {};
   let combo = 0;
+  let foglie = 0;
 
   for (;;) {
     let rimossi, esplosi, creati = [];
@@ -312,6 +336,7 @@ function risolvi(g, primoColpo = null, origine = null) {
       conteggioTipi[t] = (conteggioTipi[t] || 0) + n;
     }
     punti += passo.punti;
+    foglie += passo.foglieTolte.length;
     passi.push(passo);
     passi.push(applicaGravita(g));
 
@@ -319,8 +344,11 @@ function risolvi(g, primoColpo = null, origine = null) {
     if (gradino > 60) break;   // rete di sicurezza, non dovrebbe mai servire
   }
 
-  return { passi, punti, conteggioTipi, combo, cascate: gradino };
+  return { passi, punti, conteggioTipi, combo, foglie, cascate: gradino };
 }
+
+/** Quante foglie restano da liberare in tutto il tavolo. */
+export const foglieRimaste = (g) => g.foglie.reduce((a, b) => a + b, 0);
 
 /* --- Mosse ----------------------------------------------------------------- */
 
@@ -466,13 +494,22 @@ export function serializza(g) {
   return {
     colonne: g.colonne, righe: g.righe, nTipi: g.nTipi, prossimoId: g.prossimoId,
     celle: g.celle.map((c) => (c ? [c.id, c.tipo, c.speciale || 0] : 0)),
+    foglie: g.foglie.join(''),
   };
 }
 
 export function deserializza(d) {
   if (!d || !Array.isArray(d.celle) || d.celle.length !== d.colonne * d.righe) return null;
+  const quante = d.colonne * d.righe;
+  /* Le partite salvate prima delle foglie non hanno il campo: si riprendono
+     senza, invece di rifiutare il salvataggio e far ricominciare il livello. */
+  const foglie = typeof d.foglie === 'string' && d.foglie.length === quante
+    ? [...d.foglie].map(Number)
+    : new Array(quante).fill(0);
+
   return {
     colonne: d.colonne, righe: d.righe, nTipi: d.nTipi, prossimoId: d.prossimoId,
     celle: d.celle.map((c) => (c ? { id: c[0], tipo: c[1], speciale: c[2] || null } : null)),
+    foglie,
   };
 }

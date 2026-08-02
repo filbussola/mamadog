@@ -29,6 +29,9 @@
   --p4: #ff6b6b;  --p4-l: #ffadad;  --p4-s: #c2373f;   /* cuore    */
   --p5: #b98ff0;  --p5-l: #dfc4ff;  --p5-s: #7f50be;   /* stella   */
 
+  /* Le foglie sotto le tessere: verde spento, per non competere coi pezzi. */
+  --foglia: #4f7a35;  --foglia-scura: #335023;
+
   /* Due strati: una ombra stretta che àncora l'oggetto alla superficie e una
      larga e morbida che gli dà aria. Una sola sembra sempre finta. */
   --ombra: 0 .15rem .3rem rgb(0 0 0 / .30), 0 .7rem 1.9rem rgb(0 0 0 / .34);
@@ -64,6 +67,8 @@
   --p3: #3fadea;  --p3-l: #97dbfb;  --p3-s: #1c6f9d;
   --p4: #f04e4e;  --p4-l: #ff9d9d;  --p4-s: #ab2a31;
   --p5: #a274e6;  --p5-l: #d2b4f8;  --p5-s: #683ca2;
+
+  --foglia: #86b855;  --foglia-scura: #5c8a34;
 
   --ombra: 0 .1rem .22rem rgb(140 95 45 / .13), 0 .6rem 1.5rem rgb(140 95 45 / .17);
   --luce-bordo: inset 0 1px 0 rgb(255 255 255 / .9);
