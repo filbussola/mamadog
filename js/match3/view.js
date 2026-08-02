@@ -5,7 +5,7 @@
    cascata un gradino alla volta invece di saltare al risultato finale.
    ========================================================================== */
 
-import { $, attendi, coriandoli, mostraPannello, vaiA } from '../ui.js';
+import { $, attendi, coriandoli, mostraPannello, vaiA, quandoCambiaLoSpazio } from '../ui.js';
 import { stato, salva, salvaSubito, registraLivelloFinito } from '../store.js';
 import { suoni } from '../audio.js';
 import { creaMascotte, frase } from '../wurstel.js';
@@ -29,6 +29,7 @@ let trascina = null;
 let timerSuggerimento = 0;
 let pronto = false;
 let attesaProssimo = false;   // livello finito: la partita salvata non vale più
+let rimisura = () => {};      // rimisura il tavolo (e tiene vivo l'osservatore)
 
 const perId = new Map();  // id della cella -> elemento nel DOM
 
@@ -485,14 +486,14 @@ function inizializza() {
   griglia.addEventListener('pointerup', ditoSu);
   griglia.addEventListener('pointercancel', ditoSu);
 
-  new ResizeObserver(misura).observe(tavolo);
+  rimisura = quandoCambiaLoSpazio(tavolo, misura);
   pronto = true;
 }
 
 export function entra() {
   if (!pronto) inizializza();
   if (!g) riprendiOppureNuovo();
-  misura();
+  rimisura();
   mascotte.sveglia();
   mascotte.dici(livello.descrizione, 2600);
   if (!bloccato) programmaSuggerimento();

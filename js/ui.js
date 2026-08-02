@@ -9,6 +9,46 @@ export const $$ = (sel, dove = document) => [...dove.querySelectorAll(sel)];
 
 export const attendi = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Rimisura quando lo spazio disponibile cambia — in pratica: quando lei gira
+ * l'iPad in mano.
+ *
+ * Il ResizeObserver da solo non basta. Su iOS l'evento di rotazione arriva a
+ * volte prima che il layout sia aggiornato, e i suoi richiami vengono
+ * consegnati solo mentre la pagina disegna: se l'app è in secondo piano
+ * durante la rotazione, al ritorno le misure sarebbero quelle vecchie.
+ * Perciò si ascolta anche la finestra, e si rimisura una seconda volta poco
+ * dopo, quando Safari ha finito di sistemare le cose.
+ */
+export function quandoCambiaLoSpazio(elemento, misura) {
+  const osservatore = new ResizeObserver(misura);
+  osservatore.observe(elemento);
+
+  /* Due passate: la prima subito, la seconda quando il resto della pagina si è
+     assestato. Serve davvero — entrando in una schermata la barra in alto non
+     ha ancora la sua altezza definitiva, e misurando una volta sola il tavolo
+     risulta più alto di quello che sarà. */
+  const rimisura = () => {
+    misura();
+    setTimeout(misura, 120);
+    setTimeout(misura, 400);
+  };
+
+  addEventListener('resize', rimisura);
+  addEventListener('orientationchange', rimisura);
+
+  /* E se l'iPad viene girato mentre l'app è in secondo piano, al ritorno non
+     arriva nessun evento di ridimensionamento: si rimisura comunque. */
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') rimisura();
+  });
+
+  /* L'osservatore vive dentro questa chiusura: chi tiene `rimisura` tiene
+     vivo anche lui. */
+  rimisura.osservatore = osservatore;
+  return rimisura;
+}
+
 /* --- Tema ----------------------------------------------------------------- */
 export function applicaTema(tema) {
   stato.impostazioni.tema = tema;

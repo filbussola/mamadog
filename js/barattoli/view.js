@@ -4,7 +4,7 @@
    livello è garantito risolvibile prima ancora di comparire sullo schermo.
    ========================================================================== */
 
-import { $, attendi, coriandoli, mostraPannello, vaiA } from '../ui.js';
+import { $, attendi, coriandoli, mostraPannello, vaiA, quandoCambiaLoSpazio } from '../ui.js';
 import { stato, salva, salvaSubito, registraLivelloFinito } from '../store.js';
 import { suoni } from '../audio.js';
 import { creaMascotte } from '../wurstel.js';
@@ -23,6 +23,8 @@ let bloccato = false;
 let pronto = false;
 let attesaProssimo = false;
 
+let rimisura = () => {};   // rimisura lo scaffale (e tiene vivo l'osservatore)
+
 const elementi = [];       // un div per barattolo
 const biscottiDi = [];     // gli elementi dei biscotti, dal fondo in su
 
@@ -30,17 +32,30 @@ const biscottiDi = [];     // gli elementi dei biscotti, dal fondo in su
 /*  Misure                                                                     */
 /* ========================================================================== */
 
+/**
+ * I barattoli vanno tenuti più grandi possibile: sono il bersaglio del dito.
+ * Si provano tutte le disposizioni e si tiene quella che li fa più grossi —
+ * su un tablet largo vengono su una riga sola, su un telefono stretto su due
+ * o tre, invece di rimpicciolirsi per stare in fila.
+ */
 function misura() {
   if (!barattoli.length || !tavolo.clientWidth) return;
   const quanti = barattoli.length;
-  const righe = quanti <= 6 ? 1 : 2;
-  const perRiga = Math.ceil(quanti / righe);
+  const largoUtile = tavolo.clientWidth - 20;
+  const altoUtile  = tavolo.clientHeight - 20;
 
-  const largo = Math.max(34, Math.min(120, Math.floor(Math.min(
-    (tavolo.clientWidth  - 20) / (perRiga * 1.3),
-    (tavolo.clientHeight - 20) / (righe * 2.35),
-  ))));
-  scaffale.style.setProperty('--largo', largo + 'px');
+  let migliore = 0;
+  for (let righe = 1; righe <= 4; righe++) {
+    const perRiga = Math.ceil(quanti / righe);
+    /* I due coefficienti tengono conto degli spazi fra i barattoli, dichiarati
+       in barattoli.css come frazione della loro larghezza. */
+    migliore = Math.max(migliore, Math.min(
+      largoUtile / (perRiga * 1.3),
+      altoUtile  / (righe * 2.35),
+    ));
+  }
+
+  scaffale.style.setProperty('--largo', Math.max(34, Math.min(120, Math.floor(migliore))) + 'px');
 }
 
 /* ========================================================================== */
@@ -311,14 +326,14 @@ function inizializza() {
   $('#ba-annulla').addEventListener('click', annulla);
   $('#ba-ricomincia').addEventListener('click', ricomincia);
 
-  new ResizeObserver(misura).observe(tavolo);
+  rimisura = quandoCambiaLoSpazio(tavolo, misura);
   pronto = true;
 }
 
 export function entra() {
   if (!pronto) inizializza();
   if (!barattoli.length) riprendiOppureNuovo();
-  misura();
+  rimisura();
   mascotte.sveglia();
 }
 
