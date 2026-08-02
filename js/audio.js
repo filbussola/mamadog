@@ -127,6 +127,12 @@ export const suoni = {
 
   rimescola()  { fruscio({ da: 600, a: 2400, durata: 0.5, volume: 0.13 }); },
 
+  /* Foglie che si staccano: un fruscio secco, più pieno se ne vanno tante. */
+  foglia(quante = 1) {
+    fruscio({ da: 2600, a: 1100, durata: 0.16 + Math.min(quante, 6) * 0.03,
+              volume: 0.07 + Math.min(quante, 6) * 0.012 });
+  },
+
   /* Fine livello: un arpeggio maggiore, caldo, che si chiude bene. */
   livello() {
     [0, 4, 7, 12, 16].forEach((semi, i) => {

@@ -36,6 +36,32 @@
     var(--ombra);
 }
 
+/* --- Lo strato di foglie, sotto le tessere -------------------------------- */
+.strato-foglie { position: absolute; inset: 0; pointer-events: none; }
+
+.foglia {
+  position: absolute; top: 0; left: 0;
+  width: var(--lato); height: var(--lato);
+  display: grid; place-items: center;
+}
+/* Il posizionamento della casella sta sul contenitore, le animazioni sul
+   disegno: così non si contendono la stessa `transform`. */
+.foglia svg {
+  width: 96%; height: 96%; display: block;
+  transition: transform .25s cubic-bezier(.3,1.4,.4,1);
+}
+
+.foglia--pelata svg { animation: foglia-pelata .45s ease; }
+@keyframes foglia-pelata {
+  35% { transform: scale(1.14) rotate(-7deg); }
+}
+
+.foglia--via svg { animation: foglia-via .44s cubic-bezier(.4,0,.6,1) forwards; }
+@keyframes foglia-via {
+  30%  { transform: scale(1.16) rotate(-9deg); }
+  100% { transform: scale(.15) rotate(34deg); opacity: 0; }
+}
+
 .tessera {
   position: absolute; top: 0; left: 0;
   width: var(--lato); height: var(--lato);

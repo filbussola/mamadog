@@ -9,7 +9,7 @@ import { $, attendi, coriandoli, mostraPannello, vaiA, quandoCambiaLoSpazio } fr
 import { stato, salva, salvaSubito, registraLivelloFinito } from '../store.js';
 import { suoni } from '../audio.js';
 import { creaMascotte, frase } from '../wurstel.js';
-import { pezzoSvg, caneSvg, arteMatch3 } from '../art.js';
+import { pezzoSvg, caneSvg, arteMatch3, fogliaSvg } from '../art.js';
 import { presentaNuoviAmici } from '../amici.js';
 import * as motore from './engine.js';
 import { livelloMatch3, avanzamento, biscottiDelLivello } from './levels.js';
@@ -31,7 +31,9 @@ let pronto = false;
 let attesaProssimo = false;   // livello finito: la partita salvata non vale più
 let rimisura = () => {};      // rimisura il tavolo (e tiene vivo l'osservatore)
 
-const perId = new Map();  // id della cella -> elemento nel DOM
+const perId = new Map();     // id della cella -> elemento nel DOM
+const foglieEl = new Map();  // indice della casella -> elemento della foglia
+let strato = null;           // il contenitore delle foglie, sotto le tessere
 
 /* ========================================================================== */
 /*  Misure                                                                     */
@@ -67,6 +69,45 @@ function collocaTutte() {
     if (!cella) continue;
     const el = perId.get(cella.id);
     if (el) trasforma(el, motore.colonnaDi(g, i), motore.rigaDi(g, i));
+  }
+  for (const [i, el] of foglieEl) {
+    trasforma(el, motore.colonnaDi(g, i), motore.rigaDi(g, i));
+  }
+}
+
+/* ========================================================================== */
+/*  Foglie                                                                     */
+/* ========================================================================== */
+
+function disegnaFoglie() {
+  strato.innerHTML = '';
+  foglieEl.clear();
+  for (let i = 0; i < g.foglie.length; i++) {
+    if (!g.foglie[i]) continue;
+    const el = document.createElement('div');
+    el.className = 'foglia';
+    el.innerHTML = fogliaSvg(g.foglie[i]);
+    strato.append(el);
+    foglieEl.set(i, el);
+  }
+}
+
+/** Una passata sulle foglie appena consumate da una rimozione. */
+function aggiornaFoglie(tolte) {
+  for (const { indice, rimaste } of tolte) {
+    const el = foglieEl.get(indice);
+    if (!el) continue;
+
+    if (rimaste <= 0) {
+      el.classList.add('foglia--via');
+      foglieEl.delete(indice);
+      setTimeout(() => el.remove(), 460);
+    } else {
+      el.innerHTML = fogliaSvg(rimaste);
+      el.classList.remove('foglia--pelata');
+      void el.offsetWidth;
+      el.classList.add('foglia--pelata');
+    }
   }
 }
 
@@ -173,6 +214,11 @@ async function animaRimozione(passo) {
     .map((i) => vista[i] && perId.get(vista[i].id))
     .filter(Boolean);
   for (const el of condannati) el.classList.add('tessera--esplode');
+
+  if (passo.foglieTolte.length) {
+    aggiornaFoglie(passo.foglieTolte);
+    suoni.foglia(passo.foglieTolte.length);
+  }
 
   puntiVolanti(passo);
   await attendi(passo.esplosi.length ? 330 : 285);
@@ -300,7 +346,8 @@ function aggiornaTesta() {
   $('#m3-livello').textContent = livello.numero;
   const icona = $('#m3-obiettivo-icona');
   icona.innerHTML =
-    livello.genere === 'tipo'      ? pezzoSvg(livello.tipo)
+    livello.genere === 'tipo'        ? pezzoSvg(livello.tipo)
+    : livello.genere === 'foglie'    ? fogliaSvg(1)
     : livello.genere === 'qualsiasi' ? arteMatch3()
     : pezzoSvg(5, 'bomba');
   icona.title = livello.descrizione;
@@ -356,7 +403,9 @@ function salvaPartita() {
 function nuovoLivello(n) {
   attesaProssimo = false;
   livello = livelloMatch3(n);
-  g = motore.creaGriglia({ colonne: COLONNE, righe: RIGHE, nTipi: livello.nTipi });
+  g = motore.creaGriglia({
+    colonne: COLONNE, righe: RIGHE, nTipi: livello.nTipi, foglie: livello.foglie,
+  });
   progresso = 0;
   avviaTavolo();
   salvaPartita();
@@ -371,7 +420,12 @@ function riprendiOppureNuovo() {
     if (ripresa) {
       g = ripresa;
       livello = livelloMatch3(n);
-      progresso = Math.min(livello.quantita, salvata.progresso || 0);
+      /* Nei livelli con le foglie il progresso si ricava dal prato invece di
+         fidarsi del numero salvato: quello che si vede e quello che conta la
+         barra non possono discordare. */
+      progresso = livello.genere === 'foglie'
+        ? livello.quantita - motore.foglieRimaste(g)
+        : Math.min(livello.quantita, salvata.progresso || 0);
       avviaTavolo();
       return;
     }
@@ -382,10 +436,19 @@ function riprendiOppureNuovo() {
 function avviaTavolo() {
   attesaProssimo = false;
   perId.clear();
+  foglieEl.clear();
   griglia.innerHTML = '';
+
+  /* Le foglie vanno nel DOM per prime: le tessere, aggiunte dopo, finiscono
+     naturalmente sopra senza bisogno di litigare con gli z-index. */
+  strato = document.createElement('div');
+  strato.className = 'strato-foglie';
+  griglia.append(strato);
+
   specchiaDalMotore();
   lato = 0;                 // forza il ricalcolo della misura
   misura();
+  disegnaFoglie();
   sincronizza({ anima: false });
   aggiornaTesta();
   bloccato = false;

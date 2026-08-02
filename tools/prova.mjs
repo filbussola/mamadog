@@ -8,7 +8,7 @@
    ========================================================================== */
 
 import * as m3 from '../js/match3/engine.js';
-import { livelloMatch3, avanzamento } from '../js/match3/levels.js';
+import { livelloMatch3, avanzamento, foglieDelLivello } from '../js/match3/levels.js';
 import { generaLivello, risolvibile, livelloBarattoli } from '../js/barattoli/generator.js';
 import { CAPIENZA, vinto } from '../js/barattoli/engine.js';
 
@@ -62,7 +62,8 @@ console.log('\nMATCH-3');
   /* Un fondo a scacchi di quattro tipi non contiene mai tre in fila: sopra ci
      si può appoggiare qualsiasi figura e sapere che si sta misurando quella. */
   const fondo = () => {
-    const g = { colonne: 8, righe: 8, nTipi: 6, celle: [], prossimoId: 1 };
+    const g = { colonne: 8, righe: 8, nTipi: 6, celle: [],
+                foglie: new Array(64).fill(0), prossimoId: 1 };
     for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
       g.celle[r * 8 + c] = { id: g.prossimoId++, tipo: (c + 2 * r) % 4, speciale: null };
     }
@@ -115,7 +116,8 @@ console.log('\nMATCH-3');
 {
   /* Righe alternate a coppie: nessuno scambio produce un tris. È il vicolo
      cieco che nel gioco vero non si deve mai vedere. */
-  const g = { colonne: 8, righe: 8, nTipi: 4, celle: [], prossimoId: 1 };
+  const g = { colonne: 8, righe: 8, nTipi: 4, celle: [],
+              foglie: new Array(64).fill(0), prossimoId: 1 };
   for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
     g.celle[r * 8 + c] = { id: g.prossimoId++, tipo: (r % 2) * 2 + (c % 2), speciale: null };
   }
@@ -142,6 +144,77 @@ console.log('\nMATCH-3');
   prova('lo stesso livello dà sempre lo stesso obiettivo', ok);
   prova('l\'obiettivo "combo" conta le cascate',
         avanzamento({ genere: 'combo' }, { combo: 3, conteggioTipi: {} }) === 3);
+}
+
+/* -------------------------------------------------------------------------- */
+console.log('\nFOGLIE');
+
+{
+  let sempreRaggiungibili = true, sempreCoerenti = true, primoGuasto = '';
+
+  for (let n = 1; n <= 300; n++) {
+    const foglie = foglieDelLivello(n);
+    if (foglie.length !== 64 || foglie.some((v) => v < 0 || v > 2)) {
+      sempreCoerenti = false; primoGuasto = `livello ${n}`; break;
+    }
+    if (foglie.reduce((a, b) => a + b, 0) < 6) {
+      sempreCoerenti = false; primoGuasto = `livello ${n}: troppo poche`; break;
+    }
+    if (JSON.stringify(foglieDelLivello(n)) !== JSON.stringify(foglie)) {
+      sempreCoerenti = false; primoGuasto = `livello ${n}: non ripetibile`; break;
+    }
+  }
+  prova('lo strato di foglie è sempre valido e ripetibile', sempreCoerenti, primoGuasto);
+
+  /* La prova che conta: giocando, il prato si libera sempre fino all'ultima
+     foglia. Se una casella restasse irraggiungibile, il livello non finirebbe
+     mai — ed è l'unico modo in cui questo gioco potrebbe incastrare qualcuno. */
+  for (const n of [5, 12, 25, 60, 150]) {
+    const foglie = foglieDelLivello(n);
+    const totale = foglie.reduce((a, b) => a + b, 0);
+    const g = m3.creaGriglia({ colonne: 8, righe: 8, nTipi: 5, foglie });
+
+    let liberate = 0, mosse = 0;
+    while (m3.foglieRimaste(g) > 0 && mosse < 4000) {
+      const mossa = m3.trovaMossaValida(g);
+      if (!mossa) { m3.rimescola(g); continue; }
+      const esito = m3.eseguiMossa(g, mossa.a, mossa.b);
+      if (esito) { liberate += esito.foglie; mosse++; }
+    }
+    if (m3.foglieRimaste(g) !== 0 || liberate !== totale) {
+      sempreRaggiungibili = false;
+      primoGuasto = `livello ${n}: ne restavano ${m3.foglieRimaste(g)} dopo ${mosse} mosse`;
+      break;
+    }
+  }
+  prova('giocando si arriva sempre a liberare tutto il prato', sempreRaggiungibili, primoGuasto);
+
+  {
+    const g = m3.creaGriglia({ colonne: 8, righe: 8, nTipi: 5, foglie: foglieDelLivello(30) });
+    const primaDelGiro = m3.foglieRimaste(g);
+    const ritorno = m3.deserializza(m3.serializza(g));
+    prova('le foglie sopravvivono al salvataggio',
+          m3.foglieRimaste(ritorno) === primaDelGiro);
+    prova('una partita salvata prima delle foglie si riapre lo stesso',
+          m3.deserializza({ colonne: 8, righe: 8, nTipi: 5, prossimoId: 2,
+                            celle: new Array(64).fill([1, 0, 0]) })?.foglie.length === 64);
+  }
+
+  {
+    const foglie = new Array(64).fill(0);
+    foglie[27] = 2;
+    const g = m3.creaGriglia({ colonne: 8, righe: 8, nTipi: 5, foglie });
+    prova('una foglia doppia vale due passate', m3.foglieRimaste(g) === 2);
+    prova('l\'obiettivo "foglie" conta le foglie tolte',
+          avanzamento({ genere: 'foglie' }, { foglie: 4, conteggioTipi: {}, combo: 0 }) === 4);
+  }
+
+  {
+    let conFoglie = 0;
+    for (let n = 1; n <= 200; n++) if (livelloMatch3(n).genere === 'foglie') conFoglie++;
+    prova('le foglie compaiono spesso ma non sempre',
+          conFoglie > 30 && conFoglie < 120, `${conFoglie} livelli su 200`);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
