@@ -19,7 +19,7 @@ import { generaLivello } from './generator.js';
 const MS_SUGGERIMENTO = 8000;
 const OLTRE_BORDO = 3;   // caselle oltre il bordo: garantisce che l'uscita esca dallo schermo
 
-let tavolo, cortile, mascotte;
+let tavolo, cortile, mascotte, strato;
 let g = null;
 let iniziali = 0;
 let numeroLivello = 1;
@@ -46,6 +46,7 @@ function misura() {
   cortile.style.setProperty('--colonne', g.colonne);
   cortile.style.setProperty('--righe', g.righe);
   senzaMoto(collocaTutte);
+  disegnaLinee();
 }
 
 function senzaMoto(azione) {
@@ -78,7 +79,6 @@ function creaCucciolo(cella) {
 }
 
 function disegnaTutti() {
-  cortile.innerHTML = '';
   perId.clear();
   for (let i = 0; i < g.celle.length; i++) {
     const cella = g.celle[i];
@@ -88,6 +88,51 @@ function disegnaTutti() {
     cortile.append(el);
   }
   senzaMoto(collocaTutte);
+}
+
+/**
+ * Le righe guida: una per cucciolo, dalla sua casella fino a dove può
+ * arrivare in questo momento. Piena fino al bordo e dorata se la strada è
+ * libera — è lì che si può toccare —, più corta e spenta se si ferma contro
+ * un altro. Si ridisegnano per intero a ogni mossa: con al più una manciata
+ * di decine di cuccioli, rifarle da capo costa meno che inseguire quali sono
+ * cambiate, ed è molto più semplice da seguire.
+ */
+function disegnaLinee() {
+  if (!strato || !lato) return;
+  strato.innerHTML = '';
+
+  for (let i = 0; i < g.celle.length; i++) {
+    const cella = g.celle[i];
+    if (!cella) continue;
+
+    const apertura = motore.percorsoAperto(g, i, cella.direzione);
+    if (!apertura) continue;   // già bloccato dal vicino: non c'è strada da disegnare
+
+    const libera = motore.puoUscire(g, i);
+    const el = document.createElement('div');
+    el.className = `linea linea--${cella.direzione}${libera ? ' linea--libera' : ''}`;
+    posizionaLinea(el, i, cella.direzione, apertura);
+    strato.append(el);
+  }
+}
+
+function posizionaLinea(el, i, direzione, apertura) {
+  const c = motore.colonnaDi(g, i), r = motore.rigaDi(g, i);
+  const spessore = Math.max(4, Math.round(lato * 0.16));
+  const lunghezza = apertura * lato;
+
+  if (direzione === 'su' || direzione === 'giu') {
+    el.style.width = spessore + 'px';
+    el.style.height = lunghezza + 'px';
+    el.style.left = (c * lato + (lato - spessore) / 2) + 'px';
+    el.style.top = direzione === 'su' ? (r * lato - lunghezza) + 'px' : (r + 1) * lato + 'px';
+  } else {
+    el.style.height = spessore + 'px';
+    el.style.width = lunghezza + 'px';
+    el.style.top = (r * lato + (lato - spessore) / 2) + 'px';
+    el.style.left = direzione === 'sx' ? (c * lato - lunghezza) + 'px' : (c + 1) * lato + 'px';
+  }
 }
 
 /** Dove finisce, fuori dal cortile, un cucciolo che corre in `direzione`. */
@@ -136,6 +181,11 @@ async function tocca(i) {
     programmaSuggerimento();
     return;
   }
+
+  /* Il tavolo è già cambiato, appena il motore ha tolto il cucciolo: le righe
+     guida degli altri si aggiornano da qui, senza aspettare che l'animazione
+     di uscita sia finita. */
+  disegnaLinee();
 
   bloccato = true;
   suoni.scappa();
@@ -231,8 +281,16 @@ function riprendiOppureNuovo() {
 function avviaTavolo() {
   attesaProssimo = false;
   lato = 0;               // forza il ricalcolo della misura
+  cortile.innerHTML = '';
+
+  /* Le righe guida stanno sotto i cuccioli: create per prime, ci finiscono
+     sotto senza bisogno di litigare con gli z-index. */
+  strato = document.createElement('div');
+  strato.className = 'strato-linee';
+  cortile.append(strato);
+
   disegnaTutti();
-  misura();
+  misura();          // rimisura ridisegna anche le righe guida
   aggiornaTesta();
   bloccato = false;
   programmaSuggerimento();

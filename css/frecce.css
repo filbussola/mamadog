@@ -38,6 +38,36 @@
     var(--ombra);
 }
 
+/* --- Le righe guida: dove porta ognuno, e se ci può arrivare adesso ------- */
+.strato-linee { position: absolute; inset: 0; pointer-events: none; }
+
+.linea {
+  position: absolute;
+  border-radius: 999px;
+  --riga-colore: rgb(255 255 255 / .28);
+  opacity: .5;
+  transition: opacity .22s ease;
+}
+:root[data-tema="giorno"] .linea { --riga-colore: rgb(110 80 50 / .28); }
+
+/* Il colore sfuma via dal cucciolo verso il bordo, come una traccia lasciata
+   correndo: piena vicino a lui, che si perde man mano che si allontana. */
+.linea--su  { background: linear-gradient(to top,    var(--riga-colore), transparent); }
+.linea--giu { background: linear-gradient(to bottom, var(--riga-colore), transparent); }
+.linea--sx  { background: linear-gradient(to left,   var(--riga-colore), transparent); }
+.linea--dx  { background: linear-gradient(to right,  var(--riga-colore), transparent); }
+
+/* Strada libera fino al muro: si accende e respira piano, un invito. */
+.linea--libera {
+  --riga-colore: color-mix(in srgb, var(--ambra) 88%, transparent);
+  opacity: .7;
+  animation: corsia-libera 1.8s ease-in-out infinite;
+}
+@keyframes corsia-libera {
+  0%, 100% { opacity: .5; }
+  50%      { opacity: .92; }
+}
+
 .cucciolo {
   position: absolute; top: 0; left: 0;
   width: var(--lato); height: var(--lato);

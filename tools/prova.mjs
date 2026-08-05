@@ -349,6 +349,48 @@ console.log('\nVIA LIBERA');
   prova('un cucciolo con la strada libera è uscibile', fr.puoUscire(isolato, 5));
 }
 
+{
+  /* La riga guida: quanto è lunga deve combaciare esattamente con quello che
+     puoUscire() dice, altrimenti la riga mentirebbe su cosa si può toccare. */
+  const g = { colonne: 4, righe: 4, prossimoId: 4,
+    celle: [
+      null, null, null, null,
+      { id: 1, direzione: 'giu' }, { id: 3, direzione: 'su' }, null, null,
+      null, { id: 2, direzione: 'su' }, null, null,   // sopra: si ferma contro il cucciolo 3
+      null, null, null, null,
+    ] };
+
+  prova('la strada tutta libera arriva fino al bordo',
+        fr.percorsoAperto(g, 4, 'giu') === 2 && fr.puoUscire(g, 4));
+  prova('la strada bloccata si ferma prima dell\'ostacolo',
+        fr.percorsoAperto(g, 9, 'su') === 0 && !fr.puoUscire(g, 9));
+
+  const isolato = { colonne: 5, righe: 1, prossimoId: 2,
+    celle: [null, null, { id: 1, direzione: 'dx' }, null, null] };
+  prova('percorsoAperto conta esattamente le caselle libere',
+        fr.percorsoAperto(isolato, 2, 'dx') === 2);
+
+  /* Su cento cortili diversi, ogni cucciolo pronto a partire deve avere una
+     strada aperta lunga esattamente quanto quella fino al bordo: è la stessa
+     proprietà vista da un altro angolo, verificata su casi veri. */
+  let coerente = true, guasto = '';
+  for (let n = 1; n <= 100 && coerente; n++) {
+    const g2 = generaLivelloFrecce(n);
+    for (let i = 0; i < g2.celle.length; i++) {
+      const cella = g2.celle[i];
+      if (!cella) continue;
+      const apertura = fr.percorsoAperto(g2, i, cella.direzione);
+      const libera = fr.puoUscire(g2, i);
+      const c = i % g2.colonne, r = Math.floor(i / g2.colonne);
+      const distanzaAlBordo =
+        cella.direzione === 'su' ? r : cella.direzione === 'giu' ? g2.righe - 1 - r :
+        cella.direzione === 'sx' ? c : g2.colonne - 1 - c;
+      if (libera !== (apertura === distanzaAlBordo)) { coerente = false; guasto = `livello ${n}, casella ${i}`; break; }
+    }
+  }
+  prova('la lunghezza della riga guida è sempre coerente con "può uscire"', coerente, guasto);
+}
+
 /* -------------------------------------------------------------------------- */
 console.log('\nSALVATAGGIO DI RISERVA');
 
