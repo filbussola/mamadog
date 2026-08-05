@@ -10,6 +10,7 @@ import { caneSvg } from './art.js';
 import * as hub from './hub.js';
 import * as match3 from './match3/view.js';
 import * as barattoli from './barattoli/view.js';
+import * as frecce from './frecce/view.js';
 
 /* --- Le abitudini di Safari da spegnere ----------------------------------- */
 
@@ -60,6 +61,7 @@ async function accendi() {
   registraSchermo('cuccia',    { entra: hub.entraCuccia });
   registraSchermo('match3',    { entra: match3.entra, esci: match3.esci });
   registraSchermo('barattoli', { entra: barattoli.entra, esci: barattoli.esci });
+  registraSchermo('frecce',    { entra: frecce.entra, esci: frecce.esci });
 
   $('#app').hidden = false;
   await vaiA('hub');

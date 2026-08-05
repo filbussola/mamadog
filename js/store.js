@@ -16,6 +16,7 @@ function predefinito() {
     amici: [],              // indici degli amici già arrivati nella cuccia
     match3:    { livello: 1, partita: null },
     barattoli: { livello: 1, partita: null },
+    frecce:    { livello: 1, partita: null },
   };
 }
 

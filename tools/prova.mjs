@@ -11,6 +11,8 @@ import * as m3 from '../js/match3/engine.js';
 import { livelloMatch3, avanzamento, foglieDelLivello } from '../js/match3/levels.js';
 import { generaLivello, risolvibile, livelloBarattoli } from '../js/barattoli/generator.js';
 import { CAPIENZA, vinto } from '../js/barattoli/engine.js';
+import * as fr from '../js/frecce/engine.js';
+import { generaLivello as generaLivelloFrecce, livelloFrecce } from '../js/frecce/generator.js';
 
 let falliti = 0;
 function prova(nome, condizione, dettaglio = '') {
@@ -252,6 +254,102 @@ console.log('\nBARATTOLI');
 }
 
 /* -------------------------------------------------------------------------- */
+console.log('\nVIA LIBERA');
+
+{
+  let semprePieni = true, sempreCoerenti = true, primoGuasto = '';
+
+  for (let n = 1; n <= 300; n++) {
+    const g = generaLivelloFrecce(n);
+    const attesi = livelloFrecce(n);
+    if (g.colonne !== attesi.colonne || g.righe !== attesi.righe) {
+      sempreCoerenti = false; primoGuasto = `livello ${n}: griglia sbagliata`; break;
+    }
+    const messi = g.celle.filter(Boolean).length;
+    /* La costruzione può lasciare qualche casella vuota se non trova una
+       direzione libera: va bene, ma non deve mai scendere troppo sotto al
+       bersaglio, altrimenti il cortile diventa spopolato e noioso. */
+    if (messi < attesi.pezzi * 0.75) {
+      semprePieni = false; primoGuasto = `livello ${n}: ${messi} su ${attesi.pezzi} attesi`; break;
+    }
+    const stessoLivello = generaLivelloFrecce(n);
+    if (JSON.stringify(fr.serializza(g)) !== JSON.stringify(fr.serializza(stessoLivello))) {
+      sempreCoerenti = false; primoGuasto = `livello ${n}: non ripetibile`; break;
+    }
+  }
+  prova('la griglia e la ripetibilità sono sempre corrette', sempreCoerenti, primoGuasto);
+  prova('la costruzione riempie quasi sempre il bersaglio', semprePieni, primoGuasto);
+}
+
+{
+  const facile = livelloFrecce(1), difficile = livelloFrecce(300);
+  prova('la griglia cresce da 5x5 a 7x7 e lì si ferma',
+        facile.colonne === 5 && difficile.colonne === 7);
+}
+
+{
+  /* La prova che conta davvero: qualunque cucciolo pronto si tocchi, in
+     qualunque ORDINE, il cortile si svuota sempre. È la proprietà che rende
+     questo gioco impossibile da incastrare, e qui la si mette alla prova sul
+     serio invece di fidarsene soltanto. */
+  let semprePossibile = true, primoGuasto = '';
+
+  for (const n of [1, 5, 12, 25, 60, 150, 300]) {
+    for (let prova_ = 0; prova_ < 6; prova_++) {
+      const g = generaLivelloFrecce(n);
+      const totale = g.celle.filter(Boolean).length;
+      let usciti = 0, passi = 0;
+
+      while (!fr.vinto(g) && passi < 5000) {
+        /* Fra tutti i cuccioli pronti a partire in questo momento, se ne
+           tocca uno A CASO: non il primo che capita, proprio per verificare
+           che l'ordine davvero non conti. */
+        const pronti = [];
+        for (let i = 0; i < g.celle.length; i++) if (fr.puoUscire(g, i)) pronti.push(i);
+        if (!pronti.length) break;
+        const scelto = pronti[Math.floor(Math.random() * pronti.length)];
+        if (fr.fai(g, scelto)) usciti++;
+        passi++;
+      }
+
+      if (!fr.vinto(g) || usciti !== totale) {
+        semprePossibile = false;
+        primoGuasto = `livello ${n}, tentativo ${prova_ + 1}: ne restano ${totale - usciti}`;
+        break;
+      }
+    }
+    if (!semprePossibile) break;
+  }
+  prova('in qualsiasi ordine si tocchino, tutti i cuccioli tornano a casa',
+        semprePossibile, primoGuasto);
+}
+
+{
+  const g = fr.deserializza(fr.serializza(generaLivelloFrecce(40)));
+  let usciti = 0, passi = 0;
+  while (!fr.vinto(g) && passi < 5000) {
+    const i = fr.trovaMossaValida(g);
+    if (i === null) break;
+    if (fr.fai(g, i)) usciti++;
+    passi++;
+  }
+  prova('salvataggio e ripristino non rompono la risolvibilità', fr.vinto(g), `restano ${g.celle.filter(Boolean).length}`);
+}
+
+{
+  const g = generaLivelloFrecce(20);
+  const vuota = g.celle.findIndex((c) => !c);
+  prova('una casella vuota non è mai uscibile', vuota === -1 || !fr.puoUscire(g, vuota));
+
+  /* Un cucciolo messo a mano con la strada intenzionalmente sgombra deve
+     risultare uscibile: verifica che puoUscire() non sia sempre "no". */
+  const isolato = { colonne: 4, righe: 4, prossimoId: 2,
+    celle: [null, null, null, null, null, { id: 1, direzione: 'su' }, null, null,
+            null, null, null, null, null, null, null, null] };
+  prova('un cucciolo con la strada libera è uscibile', fr.puoUscire(isolato, 5));
+}
+
+/* -------------------------------------------------------------------------- */
 console.log('\nSALVATAGGIO DI RISERVA');
 
 {
@@ -264,7 +362,7 @@ console.log('\nSALVATAGGIO DI RISERVA');
   globalThis.window = { addEventListener() {} };
 
   const { stato } = await import('../js/store.js');
-  const { creaCodice, leggiCodice, riassunto, applicaCodice, amiciDi } =
+  const { creaCodice, leggiCodice, riassunto, applicaCodice, amiciDi, controllo } =
     await import('../js/riserva.js');
 
   /* Un giro completo: si finge una partita avanzata, si genera il codice, si
@@ -274,6 +372,7 @@ console.log('\nSALVATAGGIO DI RISERVA');
     impostazioni: { tema: 'giorno', audio: false },
     match3: { livello: 31, partita: { griglia: 'roba' } },
     barattoli: { livello: 18, partita: { barattoli: [] } },
+    frecce: { livello: 9, partita: { griglia: 'roba' } },
   });
 
   const codice = creaCodice();
@@ -284,6 +383,7 @@ console.log('\nSALVATAGGIO DI RISERVA');
     biscotti: 0, livelliCompletati: 0, amici: [1, 2, 3],
     impostazioni: { tema: 'sera', audio: true },
     match3: { livello: 1, partita: null }, barattoli: { livello: 1, partita: null },
+    frecce: { livello: 1, partita: null },
   });
 
   const letto = leggiCodice(codice);
@@ -292,6 +392,7 @@ console.log('\nSALVATAGGIO DI RISERVA');
 
   prova('torna il livello del match-3', stato.match3.livello === 31);
   prova('torna il livello dei barattoli', stato.barattoli.livello === 18);
+  prova('torna il livello di Via libera', stato.frecce.livello === 9);
   prova('tornano i biscotti', stato.biscotti === 1234);
   prova('tornano i livelli finiti', stato.livelliCompletati === 47);
   prova('tornano gli amici giusti', stato.amici.length === amiciDi(47) && stato.amici[0] === 0,
@@ -299,9 +400,21 @@ console.log('\nSALVATAGGIO DI RISERVA');
   prova('tornano le impostazioni',
         stato.impostazioni.tema === 'giorno' && stato.impostazioni.audio === false);
   prova('la partita in corso viene azzerata',
-        stato.match3.partita === null && stato.barattoli.partita === null);
-  prova('il riassunto è leggibile', /Livello 31 .* 9 amici .* 1234 biscotti/.test(riassunto(letto.dati)),
+        stato.match3.partita === null && stato.barattoli.partita === null && stato.frecce.partita === null);
+  prova('il riassunto è leggibile', /Livello 31 .* 9 in Via libera.* 9 amici .* 1234 biscotti/.test(riassunto(letto.dati)),
         riassunto(letto.dati));
+
+  /* Un codice copiato prima che "Via libera" esistesse deve continuare a
+     funzionare: chi l'ha salvato non deve ritrovarsi con un codice morto. */
+  const corpoVecchio = '1-9-4-500-12-3';
+  const codiceVecchio = `WURSTEL-${corpoVecchio}-${controllo(corpoVecchio)}`;
+  const lettoVecchio = leggiCodice(codiceVecchio);
+  prova('un codice della versione precedente si legge ancora',
+        lettoVecchio.valido && lettoVecchio.dati.m3 === 9 && lettoVecchio.dati.ba === 4
+        && lettoVecchio.dati.biscotti === 500,
+        lettoVecchio.motivo || JSON.stringify(lettoVecchio.dati));
+  prova('a un codice vecchio manca Via libera: si assume il livello 1',
+        lettoVecchio.valido && lettoVecchio.dati.fr === 1);
 
   /* Un codice storpiato non deve MAI passare: sovrascriverebbe i progressi
      con dati sbagliati, che è peggio che non ripristinare niente. */
@@ -331,10 +444,11 @@ console.log('\nSALVATAGGIO DI RISERVA');
     Object.assign(stato, {
       biscotti: n * 37, livelliCompletati: n,
       match3: { livello: n + 1, partita: null }, barattoli: { livello: n * 2 + 1, partita: null },
+      frecce: { livello: n * 3 + 1, partita: null },
       impostazioni: { tema: n % 2 ? 'giorno' : 'sera', audio: n % 3 === 0 },
     });
     const r = leggiCodice(creaCodice());
-    if (!r.valido || r.dati.m3 !== n + 1 || r.dati.completati !== n) sempre = false;
+    if (!r.valido || r.dati.m3 !== n + 1 || r.dati.fr !== n * 3 + 1 || r.dati.completati !== n) sempre = false;
   }
   prova('cinquecento partite diverse fanno tutte andata e ritorno', sempre);
 }

@@ -332,6 +332,67 @@ export const COLORI_BISCOTTO = [
   '#4ecdc4', '#ff9f45', '#7d92f0', '#e0e0e0', '#c96f9e', '#8ec07c',
 ];
 
+/* ============================================================================
+   I CUCCIOLI DI "VIA LIBERA"
+   Un solo disegno, visto dall'alto: musetto che punta in avanti, orecchie ai
+   lati, coda dietro. Ruotandolo di 90° in 90° punta nelle quattro direzioni
+   senza bisogno di quattro disegni diversi — la stessa idea di caneSvg.
+   ========================================================================== */
+
+const TINTE_CUCCIOLO = ['#b5763f', '#3c3336', '#e8d3ae', '#d97b4a', '#8e8f96', '#c9a227'];
+const GRADI_DIREZIONE = { su: 0, dx: 90, giu: 180, sx: 270 };
+
+/** La tinta è ricavata dall'id, non salvata a parte: si rigioca in modo
+    identico dopo un salvataggio senza portarsi dietro un campo in più. */
+export function cuccioloSvg(id, direzione) {
+  const base = TINTE_CUCCIOLO[id % TINTE_CUCCIOLO.length];
+  const chiaro = verso(base, 'chiaro', .3);
+  const scuro = verso(base, 'scuro', .22);
+  const grad = nuovoId('cucciolo');
+  const gradi = GRADI_DIREZIONE[direzione] ?? 0;
+
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <radialGradient id="${grad}" cx="42%" cy="30%" r="78%">
+        <stop offset="0" stop-color="${chiaro}"/>
+        <stop offset=".6" stop-color="${base}"/>
+        <stop offset="1" stop-color="${scuro}"/>
+      </radialGradient>
+    </defs>
+    <g transform="rotate(${gradi} 50 50)">
+      <!-- coda, dietro: rinforza la direzione insieme al muso -->
+      <path d="M50 82 Q40 91 45 76" fill="none" stroke="${base}" stroke-width="8" stroke-linecap="round"/>
+      <!-- corpo -->
+      <ellipse cx="50" cy="57" rx="26" ry="29" fill="url(#${grad})" stroke="${scuro}" stroke-width="3.4"/>
+      <!-- orecchie -->
+      <path d="M26 36 C15 32 13 49 25 55 C31 51 31 40 26 36 Z" fill="${scuro}"/>
+      <path d="M74 36 C85 32 87 49 75 55 C69 51 69 40 74 36 Z" fill="${scuro}"/>
+      <!-- muso, davanti: è il verso in cui correrà -->
+      <ellipse cx="50" cy="31" rx="15" ry="13" fill="url(#${grad})" stroke="${scuro}" stroke-width="3"/>
+      <ellipse cx="50" cy="28" rx="7" ry="6" fill="#3b2b24"/>
+      <ellipse cx="47.5" cy="26" rx="2" ry="1.6" fill="#fff" opacity=".5"/>
+      <!-- collarino, lo stesso motivo di Wurstel -->
+      <path d="M38 40 Q50 45 62 40" stroke="var(--ambra)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- occhi -->
+      <circle cx="41" cy="49" r="4.3" fill="#2f231e"/>
+      <circle cx="59" cy="49" r="4.3" fill="#2f231e"/>
+      <circle cx="42.5" cy="47.3" r="1.4" fill="#fff" opacity=".85"/>
+      <circle cx="60.5" cy="47.3" r="1.4" fill="#fff" opacity=".85"/>
+    </g>
+  </svg>`;
+}
+
+/* Icona in miniatura per la carta nell'hub: due cuccioli che corrono verso
+   l'uscita, con una freccina a ricordare il movimento. */
+export function arteFrecce() {
+  return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g transform="translate(4 8) scale(.62)">${cuccioloSvg(1, 'dx')}</g>
+    <g transform="translate(50 46) scale(.62)">${cuccioloSvg(4, 'su')}</g>
+    <path d="M96 30 L112 30 M104 22 L112 30 L104 38"
+          fill="none" stroke="var(--ambra)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
 export function biscottoSvg(colore) {
   const c = COLORI_BISCOTTO[colore % COLORI_BISCOTTO.length];
   return `<svg viewBox="0 0 100 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

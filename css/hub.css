@@ -32,7 +32,7 @@
 
 .hub__giochi {
   flex: 0 0 auto;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem;
   padding: 0 1.2rem;
 }
 
@@ -48,7 +48,7 @@
   transition: transform .14s ease, filter .14s ease;
 }
 .carta-gioco:active { transform: scale(.96) translateY(2px); filter: brightness(1.1); }
-.carta-gioco__arte { width: min(26vw, 6.5rem); filter: drop-shadow(0 .2rem .4rem rgb(0 0 0 / .28)); }
+.carta-gioco__arte { width: min(21vw, 5.6rem); filter: drop-shadow(0 .2rem .4rem rgb(0 0 0 / .28)); }
 .carta-gioco__arte svg { width: 100%; height: auto; display: block; }
 .carta-gioco__nome  { font-size: 1.2rem; font-weight: 800; }
 .carta-gioco__sotto { font-size: .95rem; color: var(--inchiostro-tenue); }
