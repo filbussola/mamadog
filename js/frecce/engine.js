@@ -39,6 +39,20 @@ export function puoUscire(g, i) {
   return !!cella && percorsoLibero(g, i, cella.direzione);
 }
 
+/** Quante caselle libere ci sono da qui fino al primo ostacolo — o fino al
+    bordo, se la strada è tutta sgombra. Serve alla vista per disegnare la
+    riga guida di ogni cucciolo: piena fino al muro se può partire, più corta
+    se si ferma contro un altro. */
+export function percorsoAperto(g, i, direzione) {
+  const cellule = celleSulPercorso(g, i, direzione);
+  let n = 0;
+  for (const j of cellule) {
+    if (g.celle[j]) break;
+    n++;
+  }
+  return n;
+}
+
 /** Toglie il cucciolo se può uscire; altrimenti non fa nulla e torna null. */
 export function fai(g, i) {
   if (!puoUscire(g, i)) return null;
