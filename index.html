@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="./css/hub.css">
 <link rel="stylesheet" href="./css/match3.css">
 <link rel="stylesheet" href="./css/barattoli.css">
+<link rel="stylesheet" href="./css/frecce.css">
 </head>
 <body>
 
@@ -121,6 +122,11 @@
         <span class="carta-gioco__nome">I barattoli</span>
         <span class="carta-gioco__sotto" id="sotto-barattoli">Livello 1</span>
       </button>
+      <button class="carta-gioco carta-gioco--frecce" type="button" data-vai="frecce">
+        <span class="carta-gioco__arte" id="arte-frecce" aria-hidden="true"></span>
+        <span class="carta-gioco__nome">Via libera</span>
+        <span class="carta-gioco__sotto" id="sotto-frecce">Livello 1</span>
+      </button>
     </nav>
 
     <button class="hub__cuccia" type="button" data-vai="cuccia">
@@ -179,6 +185,29 @@
         <span aria-hidden="true">⟲</span> Ricomincia
       </button>
     </footer>
+  </section>
+
+  <!-- ---------------------------------------------------------------- FRECCE -->
+  <section id="schermo-frecce" class="schermo schermo--gioco" data-schermo="frecce" hidden>
+    <header class="barra">
+      <button class="bottone-tondo" type="button" data-vai="hub" aria-label="Torna alla cuccia">
+        <span class="bottone-tondo__icona" aria-hidden="true">‹</span>
+      </button>
+      <div class="barra__centro">
+        <p class="barra__livello">Livello <span id="fr-livello">1</span></p>
+        <div class="obiettivo">
+          <span class="obiettivo__icona" id="fr-obiettivo-icona" aria-hidden="true"></span>
+          <div class="obiettivo__barra"><div class="obiettivo__riempi" id="fr-obiettivo-riempi"></div></div>
+          <span class="obiettivo__conto" id="fr-obiettivo-conto">0/20</span>
+        </div>
+      </div>
+      <div class="mascotte mascotte--piccola" id="fr-wurstel"></div>
+    </header>
+
+    <div class="tavolo" id="fr-tavolo">
+      <div class="cortile" id="fr-cortile"></div>
+      <p class="fumetto fumetto--gioco" id="fr-fumetto" hidden></p>
+    </div>
   </section>
 
   <!-- --------------------------------------------------------------- CUCCIA -->

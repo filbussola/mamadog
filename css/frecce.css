@@ -1,0 +1,81 @@
+/* ============================================================================
+   frecce.css — il cortile di "Via libera": la conca, i cuccioli, la corsa.
+   ========================================================================== */
+
+.cortile {
+  position: relative;
+  width:  calc(var(--colonne, 6) * var(--lato, 3rem));
+  height: calc(var(--righe, 6)   * var(--lato, 3rem));
+  border-radius: 1.7rem;
+  background-color: color-mix(in srgb, var(--pannello) 55%, transparent);
+  background-image:
+    radial-gradient(circle at 50% 47%, rgb(255 255 255 / .05) 33%, transparent 34%),
+    /* un accenno di casa a ogni bordo: è lì che i cuccioli corrono */
+    radial-gradient(48% 20% at 50% 0%,   rgb(255 180 84 / .16), transparent 70%),
+    radial-gradient(48% 20% at 50% 100%, rgb(255 180 84 / .16), transparent 70%),
+    radial-gradient(20% 48% at 0% 50%,   rgb(255 180 84 / .16), transparent 70%),
+    radial-gradient(20% 48% at 100% 50%, rgb(255 180 84 / .16), transparent 70%);
+  background-size: var(--lato) var(--lato), auto, auto, auto, auto;
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / .055),
+    inset 0 .18rem .9rem rgb(0 0 0 / .34),
+    0 0 4.5rem rgb(140 190 90 / .08),
+    var(--ombra);
+  overflow: hidden;
+  touch-action: none;
+}
+:root[data-tema="giorno"] .cortile {
+  background-image:
+    radial-gradient(circle at 50% 47%, rgb(140 95 45 / .07) 33%, transparent 34%),
+    radial-gradient(48% 20% at 50% 0%,   rgb(224 137 31 / .14), transparent 70%),
+    radial-gradient(48% 20% at 50% 100%, rgb(224 137 31 / .14), transparent 70%),
+    radial-gradient(20% 48% at 0% 50%,   rgb(224 137 31 / .14), transparent 70%),
+    radial-gradient(20% 48% at 100% 50%, rgb(224 137 31 / .14), transparent 70%);
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / .7),
+    inset 0 .18rem .8rem rgb(140 95 45 / .16),
+    0 0 4.5rem rgb(224 137 31 / .14),
+    var(--ombra);
+}
+
+.cucciolo {
+  position: absolute; top: 0; left: 0;
+  width: var(--lato); height: var(--lato);
+  display: grid; place-items: center;
+  transition: transform .34s cubic-bezier(.32,.9,.34,1.02);
+}
+.cortile.senza-moto .cucciolo { transition: none !important; }
+
+.cucciolo__figura {
+  width: 82%; height: 82%;
+  display: block;
+  transition: transform .16s ease;
+  filter: drop-shadow(0 .1rem .12rem rgb(0 0 0 / .3)) drop-shadow(0 .28rem .4rem rgb(0 0 0 / .2));
+}
+.cucciolo__figura svg { width: 100%; height: 100%; display: block; }
+
+/* --- Tocca ma la strada non è libera: annusa l'aria e resta -------------- */
+.cucciolo--bloccato .cucciolo__figura { animation: annusa .38s ease; }
+@keyframes annusa {
+  25% { transform: translateY(-7%) rotate(-4deg); }
+  60% { transform: translateY(3%)  rotate(3deg); }
+}
+
+/* --- La zampa d'aiuto: dopo qualche secondo di calma ---------------------- */
+.cucciolo--suggerito .cucciolo__figura { animation: zampe 1.15s ease-in-out infinite; }
+@keyframes zampe {
+  0%, 100% { transform: scale(1); }
+  40%      { transform: scale(1.16) rotate(-4deg); }
+  70%      { transform: scale(1.04) rotate(3deg); }
+}
+
+/* --- Via libera: corre fuori dal cortile e sparisce ----------------------- */
+.cucciolo--scappa { z-index: 4; pointer-events: none; }
+.cucciolo--scappa .cucciolo__figura {
+  transition: transform .38s cubic-bezier(.4,0,.66,1), opacity .3s ease .1s;
+  transform: scale(.92);
+  opacity: 0;
+}
+
+/* --- Schermi piccoli: cortile mai più grande dei pezzi del match-3 -------- */
+@media (max-height: 620px) { .cortile { border-radius: 1.3rem; } }

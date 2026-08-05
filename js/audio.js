@@ -154,4 +154,11 @@ export const suoni = {
   },
   barattoloPieno() { marimba(PENTA[10], 0.26); marimba(PENTA[13], 0.2, 0.08); },
   annulla()    { nota(330, 0.14, 0.14, 'triangle'); nota(247, 0.18, 0.12, 'sine', 0.05); },
+
+  /* Via libera: un cucciolo che corre a casa. Due note che saltano su,
+     leggere, come uno zampettio contento — mai un suono di "punteggio". */
+  scappa() {
+    marimba(587, 0.1, 0, 0.16);
+    marimba(784, 0.16, 0.07, 0.22);
+  },
 };

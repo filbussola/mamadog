@@ -6,7 +6,7 @@
 import { $, mostraPannello, applicaTema } from './ui.js';
 import { stato, azzeraTutto, livelliAlProssimoAmico } from './store.js';
 import { impostaAudio, suoni } from './audio.js';
-import { arteMatch3, arteBarattoli, caneSvg } from './art.js';
+import { arteMatch3, arteBarattoli, arteFrecce, caneSvg } from './art.js';
 import { creaMascotte, frase } from './wurstel.js';
 import { amico, svgAmico } from './amici.js';
 import { creaCodice, leggiCodice, riassunto, applicaCodice } from './riserva.js';
@@ -22,6 +22,7 @@ let pronto = false;
 function inizializza() {
   $('#arte-match3').innerHTML = arteMatch3();
   $('#arte-barattoli').innerHTML = arteBarattoli();
+  $('#arte-frecce').innerHTML = arteFrecce();
 
   mascotte = creaMascotte($('#hub-wurstel'), { fumetto: $('#hub-fumetto') });
   mascotteCuccia = creaMascotte($('#cu-wurstel'), { dorme: false });
@@ -37,6 +38,7 @@ export function entra() {
 
   $('#sotto-match3').textContent    = `Livello ${stato.match3.livello || 1}`;
   $('#sotto-barattoli').textContent = `Livello ${stato.barattoli.livello || 1}`;
+  $('#sotto-frecce').textContent    = `Livello ${stato.frecce.livello || 1}`;
   $('#conto-amici').textContent     = stato.amici.length;
 
   mascotte.sveglia();

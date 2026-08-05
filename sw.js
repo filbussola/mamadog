@@ -8,7 +8,7 @@
    successiva il gioco si aggiorna da solo, senza chiedere niente a nessuno.
    ========================================================================== */
 
-const VERSIONE = 'wurstel-v4';
+const VERSIONE = 'wurstel-v5';
 
 /* Senza questi il gioco non parte: o ci sono tutti, o l'installazione fallisce
    e si riprova la volta dopo. Meglio nessuna promessa che una promessa a metà. */
@@ -21,6 +21,7 @@ const NUCLEO = [
   './css/hub.css',
   './css/match3.css',
   './css/barattoli.css',
+  './css/frecce.css',
   './js/main.js',
   './js/store.js',
   './js/audio.js',
@@ -36,6 +37,9 @@ const NUCLEO = [
   './js/barattoli/engine.js',
   './js/barattoli/generator.js',
   './js/barattoli/view.js',
+  './js/frecce/engine.js',
+  './js/frecce/generator.js',
+  './js/frecce/view.js',
 ];
 
 /* Belle da avere, ma se una manca il gioco funziona lo stesso. */
